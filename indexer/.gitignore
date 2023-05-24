@@ -1,0 +1,5 @@
+.ipynb_checkpoints
+*.ipynb
+*.index
+.venv/
+__pycache__/
