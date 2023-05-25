@@ -2,32 +2,37 @@
 
 Tool to index text documents into a vector database
 
-```
-poetry install
-```
+## Usage
 
-Generate the index
+### Setup
 
-```
-poetry run python src/create_index.py
+```console
+$ poetry install --only main
 ```
 
-Find the most similar documents to a given query
+### Ingest to index
 
+```console
+$ poetry run python -m indexer.cli ingest --index-file-path db.index --text "Some context text to index"
 ```
-poetry run python src/find_in_index.py
+
+or ingest from stdin (input is split by two newlines `\n\n`)
+
+```console
+$ cat texts.txt | poetry run python -m indexer.cli ingest --index-file-path db.index
 ```
 
-## TODO
+### Search in index
 
-Results are bad right now.
-Need to improve understanding of retriever:
+```console
+$ poetry run python -m indexer.cli search --index-file-path db.index "Some search prompt"
+```
 
-- Maybe the texts are too big ?
-- Maybe the retriever model is not the right one ?
-- Maybe this semantic search paradigm is not the right one ?
+## Development
 
-Read:
+### Setup
 
-- https://hackernoon.com/a-practical-5-step-guide-to-do-semantic-search-on-your-private-data-with-the-help-of-llms
-- https://dylancastillo.co/semantic-search-elasticsearch-openai-langchain/
+```console
+$ poetry install
+```
+
