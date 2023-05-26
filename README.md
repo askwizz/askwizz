@@ -18,7 +18,7 @@ Note: you need to create `./api/.env`.
 ```console
 cd ./api
 poetry install
-poetry uvicorn api.app:create_app --reload
+poetry run uvicorn api.app:create_app --reload
 ```
 
 Start UI server
