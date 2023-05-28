@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   List,
   ListItem,
   ListItemButton,
@@ -18,8 +19,9 @@ const mockDatabase = Array.from({ length: mockSize }, () =>
 
 export default function Search() {
   const [search, setSearch] = useState<string>("");
+  const [results, setResults] = useState<string[]>([]);
 
-  const results = (() => {
+  const mockResults = (() => {
     if (!search) {
       return [];
     }
@@ -28,6 +30,10 @@ export default function Search() {
     );
     return filteredResults.slice(0, 10);
   })();
+
+  const handleSearch = () => {
+    setResults(mockResults);
+  };
 
   return (
     <Box
@@ -60,6 +66,15 @@ export default function Search() {
             variant="outlined"
           />
         </Box>
+        <Button
+          onClick={handleSearch}
+          sx={{
+            marginLeft: "16px",
+          }}
+          variant="contained"
+        >
+          Search
+        </Button>
       </Box>
       <Typography variant="h5">Results</Typography>
       <nav aria-label="search results">
