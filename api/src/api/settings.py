@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import faiss
 from pydantic import BaseModel, BaseSettings, Field
 
 
@@ -8,6 +11,7 @@ class OAuthConfig(BaseModel):
 
 class AppSettings(BaseSettings):
     oauth_atlassian: OAuthConfig = Field(default=...)
+    index: Path | faiss.IndexFlatIP = Field(default=...)
 
     class Config:
         env_prefix = "api_"
