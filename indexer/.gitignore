@@ -161,3 +161,5 @@ cython_debug/
 
 # index files generated
 *.index
+
+*.ipynb
