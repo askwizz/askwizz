@@ -1,16 +1,18 @@
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import theme from "./theme";
+
+import { RouterProvider } from "react-router-dom";
+import router from "./router";
+
 function App() {
   return (
     <>
-      <h2>Connect your knowledge</h2>
-      <div style={{
-        borderStyle: "solid",
-        borderColor: "black",
-      }}>
-      <p>Atlassian (Jira, Confluence)</p>
-      <a href="/api/connect/atlassian">Connect</a>
-      </div>
+      <CssBaseline />
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
