@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 
 import click
@@ -7,7 +8,8 @@ import torch
 from sentence_transformers import SentenceTransformer
 
 from indexer.encoder import load_retriever
-from indexer.index import create_index, ingest_texts, load_index
+from indexer.index import create_index, ingest_texts, load_index, load_database
+from indexer.database import Database
 
 
 @click.command("ingest")
@@ -42,11 +44,14 @@ def ingest_command(
     device = "cuda" if cuda else None
 
     # load components
-    index: faiss.IndexFlatIP = (
+    index: faiss.IndexIDMap = (
         load_index(index_file_path)
         if os.path.exists(index_file_path)
         else create_index()
     )
+
+    database_path = str(Path(index_file_path).with_suffix(".csv"))
+    database: Database = load_database(database_path)
     retriever: SentenceTransformer = load_retriever(device=device)
 
     # encode texts
@@ -57,6 +62,7 @@ def ingest_command(
     # add to index
     ingest_texts(
         index=index,
+        database=database,
         retriever=retriever,
         texts=texts,
         batch_size=batch_size,

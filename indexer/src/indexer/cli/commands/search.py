@@ -33,7 +33,7 @@ def search_command(
     device = "cuda" if cuda else None
 
     # load components
-    index: faiss.IndexFlatIP = load_index(index_file_path)
+    index: faiss.IndexIDMap = load_index(index_file_path)
     retriever: SentenceTransformer = load_retriever(device=device)
 
     # search index

@@ -13,19 +13,19 @@ $ poetry install --only main
 ### Ingest to index
 
 ```console
-$ poetry run python -m indexer.cli ingest --index-file-path db.index --text "Some context text to index"
+poetry run python -m indexer.cli ingest --index-file-path db.index --text "Some context text to index"
 ```
 
 or ingest from stdin (input is split by two newlines `\n\n`)
 
 ```console
-$ cat texts.txt | poetry run python -m indexer.cli ingest --index-file-path db.index
+cat tests/fixtures/texts.txt | poetry run python -m indexer.cli ingest --index-file-path db.index
 ```
 
 ### Search in index
 
 ```console
-$ poetry run python -m indexer.cli search --index-file-path db.index "Some search prompt"
+poetry run python -m indexer.cli search --index-file-path db.index "Some search prompt"
 ```
 
 ## Development
@@ -33,6 +33,5 @@ $ poetry run python -m indexer.cli search --index-file-path db.index "Some searc
 ### Setup
 
 ```console
-$ poetry install
+poetry install
 ```
-

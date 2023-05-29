@@ -17,8 +17,18 @@ const mockDatabase = Array.from({ length: mockSize }, () =>
   randomWords(5).join(" ")
 );
 
+type JsonResponse = {
+  matches: {
+    metadata: any;
+    index: string;
+    rank: number;
+    reference: string;
+    score: number;
+  }[];
+};
+
 export default function Search() {
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string>("What color is the sky?");
   const [results, setResults] = useState<string[]>([]);
 
   const mockResults = (() => {
@@ -32,7 +42,20 @@ export default function Search() {
   })();
 
   const handleSearch = () => {
-    setResults(mockResults);
+    const data = { prompt: search };
+    const fetchSearchResults = async () => {
+      return await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+    };
+    fetchSearchResults().then(async (response) => {
+      const parsedResponse = (await response.json()) as JsonResponse;
+      setResults(parsedResponse.matches.map((match) => match.reference));
+    });
   };
 
   return (
