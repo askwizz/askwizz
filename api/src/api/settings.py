@@ -1,9 +1,4 @@
-from pathlib import Path
-
-import faiss
 from pydantic import BaseModel, BaseSettings, Field
-
-from indexer.database import Database
 
 
 class OAuthConfig(BaseModel):
@@ -13,8 +8,7 @@ class OAuthConfig(BaseModel):
 
 class AppSettings(BaseSettings):
     oauth_atlassian: OAuthConfig = Field(default=...)
-    index: Path | faiss.IndexIDMap = Field(default=...)
-    database: Path | Database = Field(default=...)
+    rwkv_model_path: str = Field(default=...)
 
     class Config:
         env_prefix = "api_"

@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Link,
   List,
   ListItem,
   ListItemButton,
@@ -9,40 +10,27 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import randomWords from "random-words";
-import Highlighter from "react-highlight-words";
-
-const mockSize = 1000;
-const mockDatabase = Array.from({ length: mockSize }, () =>
-  randomWords(5).join(" ")
-);
 
 type JsonResponse = {
-  matches: {
-    metadata: any;
-    index: string;
-    rank: number;
-    reference: string;
-    score: number;
+  answer: string;
+  references: {
+    metadata: {
+      id: string;
+      source: string;
+      title: string;
+    };
+    page_content: string;
   }[];
 };
 
 export default function Search() {
-  const [search, setSearch] = useState<string>("What color is the sky?");
-  const [results, setResults] = useState<string[]>([]);
-
-  const mockResults = (() => {
-    if (!search) {
-      return [];
-    }
-    const filteredResults = mockDatabase.filter((entry) =>
-      entry.includes(search)
-    );
-    return filteredResults.slice(0, 10);
-  })();
+  const [search, setSearch] = useState<string>(
+    "Which bank failed in the 90s ?"
+  );
+  const [response, setResponse] = useState<JsonResponse | null>(null);
 
   const handleSearch = () => {
-    const data = { prompt: search };
+    const data = { query: search, confluence_space_key: "TW" };
     const fetchSearchResults = async () => {
       return await fetch("/api/search", {
         method: "POST",
@@ -52,9 +40,10 @@ export default function Search() {
         body: JSON.stringify(data),
       });
     };
+    setResponse(null);
     fetchSearchResults().then(async (response) => {
       const parsedResponse = (await response.json()) as JsonResponse;
-      setResults(parsedResponse.matches.map((match) => match.reference));
+      setResponse(parsedResponse);
     });
   };
 
@@ -102,15 +91,24 @@ export default function Search() {
       <Typography variant="h5">Results</Typography>
       <nav aria-label="search results">
         <List>
-          {results.map((result) => (
-            <ListItem key={result}>
+          <Typography>{response?.answer}</Typography>
+          {response?.references?.map((result) => (
+            <ListItem key={result.page_content}>
               <ListItemButton>
                 <ListItemText>
-                  <Highlighter
-                    autoEscape={true}
-                    searchWords={[search]}
-                    textToHighlight={result}
-                  />
+                  <Box fontWeight={"bold"}>
+                    Page title: {result.metadata.title}
+                  </Box>
+                  <Box>{result.page_content}</Box>
+                  <Box>
+                    <Link
+                      href={result.metadata.source}
+                      rel="noopener"
+                      target="_blank"
+                    >
+                      link
+                    </Link>
+                  </Box>
                 </ListItemText>
               </ListItemButton>
             </ListItem>

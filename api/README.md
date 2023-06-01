@@ -36,10 +36,20 @@ Ingestion into the index isn't exposed through the API, use the [`indexer`](../i
 cat tests/fixtures/texts.txt | poetry run python -m indexer.cli ingest --index-file-path tmp/test.index
 ```
 
+Ingest a Confluence space:
+
+```
+poetry run python -m indexer.cli ingest_confluence \
+            --space "TW" \
+            --wiki_url "https://bpc-ai.atlassian.net/wiki" \
+            --email "maximeduvalsy@gmail.com" \
+            --token <your api token>
+```
+
 ### Search in index
 
 ```
-curl localhost:8000/api/search -X POST --data '{"prompt": "What color is the sky?"}' -H "Content-Type: application/json"
+curl localhost:8000/api/search -X POST --data '{"query": "Swedish banking crisis", "confluence_space_key": "TW"}' -H "Content-Type: application/json"
 ```
 
 ## Development
