@@ -12,14 +12,15 @@ $ poetry install --only main
 
 Create and fill `.env`:
 
-```
+```bash
 # Atlassian OAuth app
 API_OAUTH_ATLASSIAN__CLIENT_ID=
 API_OAUTH_ATLASSIAN__CLIENT_SECRET=
-# path to the index file as specified in our indexer
-API_INDEX=
-# path to the database file
-API_DATABASE=
+
+# path to rwkv llm model
+API_RWKV_MODEL_PATH=
+# embedder model name (e5 or huggingface supported)
+API_EMBEDDER_MODEL_NAME=
 ```
 
 ### Start server
@@ -30,20 +31,10 @@ poetry run uvicorn api.app:create_app --factory
 
 ### Ingest into index
 
-Ingestion into the index isn't exposed through the API, use the [`indexer`](../indexer) CLI to generate an index file:
-
 ```
-cat tests/fixtures/texts.txt | poetry run python -m indexer.cli ingest --index-file-path tmp/test.index
-```
-
-Ingest a Confluence space:
-
-```
-poetry run python -m indexer.cli ingest_confluence \
-            --space "TW" \
-            --wiki_url "https://bpc-ai.atlassian.net/wiki" \
-            --email "maximeduvalsy@gmail.com" \
-            --token <your api token>
+curl localhost:8000/api/index -X POST \
+          --data '{ "atlassian_email": "maximeduvalsy@gmail.com", "atlassian_token": <token>, "space_key": "TW", "wiki_url": "https://bpc-ai.atlassian.net/wiki" }' \
+          -H "Content-Type: application/json"
 ```
 
 ### Search in index

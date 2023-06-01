@@ -12,7 +12,6 @@ fastapi = "^0.95.2"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 requests = "^2.31.0"
 python-dotenv = "^1.0.0"
-indexer = "*"
 langchain = "^0.0.184"
 sentence-transformers = "^2.2.2"
 pymilvus = "^2.2.8"
@@ -21,10 +20,12 @@ lxml = "^4.9.2"
 rwkv = "^0.7.4"
 tokenizers = "^0.13.3"
 ruff = "^0.0.270"
+transformers = "^4.29.2"
+beautifulsoup4 = "^4.12.2"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]
-indexer = {path = "../indexer", develop = true}
 black = "^23.3.0"
 isort = "^5.12.0"
 flake8 = "^6.0.0"

@@ -17,6 +17,7 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 class SearchRequest(BaseModel):
     query: str
     confluence_space_key: str
+    generate_answer: bool = False
 
 
 def log_generation_live(s: str) -> None:
@@ -29,9 +30,7 @@ def get_context_from_documents(documents: list[Document]) -> str:
     return sep.join([d.page_content for d in documents])
 
 
-def generate_prompt(
-    question: str, relevant_documents: list[Document]
-) -> tuple[list[Document], str]:
+def generate_prompt(question: str, relevant_documents: list[Document]) -> str:
     context = get_context_from_documents(relevant_documents)
     return f"""Q & A 
 Given the following extracted parts of multiple documents and a question, create a final answer with references.
@@ -49,10 +48,16 @@ Detailed expert answer:
 def get_answer_and_documents(
     payload: SearchRequest, vector_db: VectorStore, llm: LLMModel
 ) -> tuple[list[Document], str]:
+    print(f"Providing answer to question {payload.query}")
     question = payload.query
     relevant_documents = vector_db.similarity_search(question, k=10)
-    prompt = generate_prompt(question, relevant_documents)
-    answer = llm.answer_prompt(prompt, log_generation_live)
+    answer = (
+        llm.answer_prompt(
+            generate_prompt(question, relevant_documents), log_generation_live
+        )
+        if payload.generate_answer
+        else ""
+    )
     return relevant_documents, answer
 
 
