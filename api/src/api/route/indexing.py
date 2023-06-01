@@ -17,10 +17,12 @@ class IndexResponse(BaseModel):
 
 def add_routes(app: FastAPI) -> None:
     @app.post("/api/index")
-    async def index(request: IndexRequest) -> IndexResponse:
+    async def index(index_request: IndexRequest) -> IndexResponse:
         index_confluence(
-            request.space_key,
-            request.wiki_url,
-            request.atlassian_email,
-            request.atlassian_token,
+            index_request.space_key,
+            index_request.wiki_url,
+            index_request.atlassian_email,
+            index_request.atlassian_token,
         )
+
+        return IndexResponse(n_pages=0, n_documents=0)

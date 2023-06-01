@@ -8,7 +8,6 @@ from rwkv.utils import PIPELINE, PIPELINE_ARGS
 # todo - see if langchain already provides abtractions
 class LLMModel:
     def __init__(self: "LLMModel", path: str) -> None:
-        print("INITIALIZED LLM MODEL")
         model = RWKV(
             model=path,
             strategy="cpu fp32",

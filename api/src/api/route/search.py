@@ -1,8 +1,7 @@
 from typing import Any
 
 from api.lifespan import ml_models
-from api.route.types import SearchRequest
-from core.search import search
+from core.search import SearchRequest, search
 from fastapi import FastAPI
 from langchain.docstore.document import Document
 from pydantic import BaseModel

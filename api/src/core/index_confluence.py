@@ -52,15 +52,15 @@ def index_confluence(space: str, wiki_url: str, email: str, token: str) -> None:
     print("Ingesting confluence space into vector database...")
     page_ids = get_page_ids_from_space(space, wiki_url, email, token)
     print("Got page ids.")
-    documents = get_confluence_pages(wiki_url, email, token, space, page_ids)
+    confluence_pages = get_confluence_pages(wiki_url, email, token, space, page_ids)
     print("Extracted documents.")
 
     text_splitter = get_text_splitter()
-    references = text_splitter.split_documents(documents)
+    confluence_chunks = text_splitter.split_documents(confluence_pages)
     print("Split documents.")
 
     Milvus.from_documents(
-        references,
+        confluence_chunks,
         ml_models["embedder"],
         connection_args={"host": "127.0.0.1", "port": "19530"},
         collection_name=get_collection_name_from_space_key(space),

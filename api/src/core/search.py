@@ -1,17 +1,22 @@
 import os
 
 from api.lifespan import ml_models
-from api.route.types import SearchRequest
 from core.index_confluence import get_collection_name_from_space_key
 from core.models.rwkv import LLMModel
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.vectorstores import Milvus
 from langchain.vectorstores.base import VectorStore
+from pydantic import BaseModel
 
 load_dotenv()
 
 token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenizer.json")
+
+
+class SearchRequest(BaseModel):
+    query: str
+    confluence_space_key: str
 
 
 def log_generation_live(s: str) -> None:

@@ -161,3 +161,4 @@ cython_debug/
 
 # All sorts of data
 tmp/
+indexer/
