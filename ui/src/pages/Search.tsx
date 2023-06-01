@@ -1,6 +1,9 @@
 import {
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
   Link,
   List,
   ListItem,
@@ -28,9 +31,14 @@ export default function Search() {
     "Which bank failed in the 90s ?"
   );
   const [response, setResponse] = useState<JsonResponse | null>(null);
+  const [generateAnswer, setGenerateAnswer] = useState(false);
 
   const handleSearch = () => {
-    const data = { query: search, confluence_space_key: "TW" };
+    const data = {
+      query: search,
+      confluence_space_key: "TW",
+      generate_answer: generateAnswer,
+    };
     const fetchSearchResults = async () => {
       return await fetch("/api/search", {
         method: "POST",
@@ -60,6 +68,7 @@ export default function Search() {
           width: "100%",
           justifyContent: "center",
           display: "flex",
+          alignItems: "center",
         }}
       >
         <Box
@@ -82,11 +91,25 @@ export default function Search() {
           onClick={handleSearch}
           sx={{
             marginLeft: "16px",
+            marginRight: "16px",
           }}
           variant="contained"
         >
           Search
         </Button>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={generateAnswer}
+                onChange={(e) => {
+                  setGenerateAnswer(e.target.checked);
+                }}
+              />
+            }
+            label="LLM answer"
+          />
+        </FormGroup>
       </Box>
       <Typography variant="h5">Results</Typography>
       <nav aria-label="search results">
