@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Annotated, Any
 
+from api.authorization import get_current_user
 from api.lifespan import ml_models
 from core.search import SearchRequest, search
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from langchain.docstore.document import Document
 from pydantic import BaseModel
 
@@ -22,6 +23,8 @@ class SearchResponse(BaseModel):
 
 def add_routes(app: FastAPI) -> None:
     @app.post("/api/search")
-    async def search_route(search_request: SearchRequest) -> SearchResponse:
+    async def search_route(
+        search_request: Annotated[SearchRequest, Depends(get_current_user)],
+    ) -> SearchResponse:
         relevant_documents, answer = search(search_request, llm=ml_models["llm"])
         return SearchResponse(answer=answer, references=relevant_documents)

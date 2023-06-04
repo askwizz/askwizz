@@ -12,3 +12,9 @@ poetry run alembic revision -m "Create connection table"
 ```bash
 poetry run alembic upgrade head
 ```
+
+## Remove latest migration
+
+```bash
+poetry run alembic downgrade -1
+```

@@ -22,8 +22,10 @@ def upgrade() -> None:
         "connection",
         sa.Column("id", sa.String(20), primary_key=True),
         sa.Column("name", sa.String(100), nullable=False),
-        sa.Column("token", sa.String(200), nullable=False),
         sa.Column("user_id", sa.String(200), nullable=False),
+        sa.Column("atlassian_token", sa.String(200), nullable=False),
+        sa.Column("atlassian_email", sa.String(200), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
     )
 
 

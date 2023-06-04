@@ -1,5 +1,8 @@
+from typing import Annotated
+
+from api.authorization import get_current_user
 from core.index_confluence import index_confluence
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
 
@@ -17,7 +20,9 @@ class IndexResponse(BaseModel):
 
 def add_routes(app: FastAPI) -> None:
     @app.post("/api/index")
-    async def index(index_request: IndexRequest) -> IndexResponse:
+    async def index(
+        index_request: Annotated[IndexRequest, Depends(get_current_user)]
+    ) -> IndexResponse:
         index_confluence(
             index_request.space_key,
             index_request.wiki_url,

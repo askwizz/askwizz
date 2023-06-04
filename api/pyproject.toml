@@ -26,6 +26,7 @@ tqdm = "^4.65.0"
 sqlalchemy = "^2.0.15"
 psycopg2-binary = "^2.9.6"
 alembic = "^1.11.1"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -75,6 +76,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "notebooks"
 ]
 
 # Same as Black.
