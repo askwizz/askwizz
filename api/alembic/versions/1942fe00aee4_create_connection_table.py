@@ -20,12 +20,13 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "connection",
-        sa.Column("id", sa.String(20), primary_key=True),
+        sa.Column("id", sa.String(50), primary_key=True),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("user_id", sa.String(200), nullable=False),
         sa.Column("atlassian_token", sa.String(200), nullable=False),
         sa.Column("atlassian_email", sa.String(200), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("status", sa.String(50), nullable=False),
     )
 
 

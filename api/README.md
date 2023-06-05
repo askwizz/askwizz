@@ -43,6 +43,14 @@ curl localhost:8000/api/index -X POST \
 curl localhost:8000/api/search -X POST --data '{"query": "Swedish banking crisis", "confluence_space_key": "TW"}' -H "Content-Type: application/json"
 ```
 
+### Add connection
+
+```
+curl localhost:8000/api/new-connection -X POST \
+  --data '{"name": "My connection", "email": "maximeduvalsy@gmail.com", "token": <atlassian token>}' \
+  -H "Authorization: Bearer <clerk token>"
+```
+
 ## Development
 
 ```

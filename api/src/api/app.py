@@ -2,10 +2,14 @@ import dotenv
 from fastapi import FastAPI
 
 import api.route.auth
+import api.route.connection
 import api.route.indexing
 import api.route.search
 from api.lifespan import get_lifespan
 from api.settings import AppSettings
+from db.engine import Base, engine
+
+Base.metadata.create_all(bind=engine)
 
 
 def create_app_with_settings(app_settings: AppSettings) -> FastAPI:
@@ -15,6 +19,7 @@ def create_app_with_settings(app_settings: AppSettings) -> FastAPI:
     api.route.auth.add_routes(app=app, app_settings=app_settings)
     api.route.search.add_routes(app=app)
     api.route.indexing.add_routes(app=app)
+    api.route.connection.add_routes(app=app)
 
     return app
 
