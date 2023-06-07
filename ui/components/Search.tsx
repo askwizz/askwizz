@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 
@@ -22,7 +22,19 @@ type JsonResponse = {
 export default function Search() {
   const [search, setSearch] = useState("What is a bad bank ?");
   const [response, setResponse] = useState<JsonResponse | null>(null);
+  const [loading, setLoading] = useState(false);
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    const keyboardHandler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        handleClickOnSearch();
+      }
+    };
+    document.addEventListener("keydown", keyboardHandler);
+    return () => document.removeEventListener("keydown", keyboardHandler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClickOnSearch = () => {
     const data = {
@@ -43,10 +55,13 @@ export default function Search() {
       });
     };
     setResponse(null);
-    fetchSearchResults().then(async (response) => {
-      const parsedResponse = (await response.json()) as JsonResponse;
-      setResponse(parsedResponse);
-    });
+    setLoading(true);
+    fetchSearchResults()
+      .then(async (response) => {
+        const parsedResponse = (await response.json()) as JsonResponse;
+        setResponse(parsedResponse);
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -64,6 +79,7 @@ export default function Search() {
         </Button>
       </div>
       <div className="flex h-32 w-full flex-col space-x-2 ">
+        {loading && <span>Loading...</span>}
         {response?.references?.map((result) => (
           <div key={result.page_content} className="flex flex-col">
             <span className="font-bold">
