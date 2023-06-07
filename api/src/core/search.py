@@ -1,7 +1,9 @@
 import os
 
 from api.lifespan import ml_models
-from core.index_confluence import get_collection_name_from_space_key
+from core.index_confluence import (
+    get_collection_name_from_connection,
+)
 from core.models.rwkv import LLMModel
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
@@ -16,7 +18,7 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 
 class SearchRequest(BaseModel):
     query: str
-    confluence_space_key: str
+    connection_name: str
     generate_answer: bool = False
 
 
@@ -65,9 +67,7 @@ def search(payload: SearchRequest, llm: LLMModel) -> tuple[list[Document], str]:
     vector_db = Milvus(
         embedding_function=ml_models["embedder"],
         connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=get_collection_name_from_space_key(
-            payload.confluence_space_key
-        ),
+        collection_name=get_collection_name_from_connection(payload.connection_name),
     )
 
     return get_answer_and_documents(payload, vector_db, llm)

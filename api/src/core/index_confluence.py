@@ -12,7 +12,7 @@ def get_collection_name_from_space_key(space_key: str) -> str:
 
 
 def get_collection_name_from_connection(connection_name: str) -> str:
-    return f"Collection-connection-{connection_name}"
+    return f"Collection_connection_{connection_name}"
 
 
 def get_page_ids_from_space(space: str, wiki_url: str, email: str, token: str) -> list:

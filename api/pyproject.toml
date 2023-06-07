@@ -14,7 +14,7 @@ requests = "^2.31.0"
 python-dotenv = "^1.0.0"
 langchain = "^0.0.184"
 sentence-transformers = "^2.2.2"
-pymilvus = "^2.2.8"
+pymilvus = "2.2.8"
 atlassian-python-api = "^3.38.0"
 lxml = "^4.9.2"
 rwkv = "^0.7.4"
@@ -96,3 +96,4 @@ max-complexity = 10
 
 [tool.poe.tasks]
 al = "poetry run alembic"   
+rp = "poetry run python"   

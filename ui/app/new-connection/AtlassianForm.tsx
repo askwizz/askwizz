@@ -19,7 +19,11 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Too short").max(50, "Too long"),
+  name: z
+    .string()
+    .min(2, "Too short")
+    .max(50, "Too long")
+    .regex(/([A-Za-z0-9\_]+)/, "Only letters, numbers, dashes and underscores"),
   email: z.string().email("Invalid email address"),
   token: z.string(),
   domain: z.string(),
@@ -29,7 +33,7 @@ type FormSchema = z.infer<typeof formSchema>;
 type FormSchemaWithToken = FormSchema & { userToken: string };
 
 export default function AtlassianForm() {
-  const { isLoaded, userId, sessionId, getToken } = useAuth();
+  const { getToken } = useAuth();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -49,7 +53,7 @@ export default function AtlassianForm() {
         "token",
         "ATATT3xFfGF0LIyG73Yf66DBMLqkDaGaEykYY9WS_noptQ5vQf5Ir-8UUa7_8pfBuwCRpOcg2rAACUj6OoMHXBT7nAW9cXcs0XHc0KTsOBtttm6tM3DtXCcD1EERJ9PqUoi8tlpOi6KQzEGcXQOLakzVsopcKjnyh-2k6UIFpOl-cfKgJsAfN0U=717F7F23",
       );
-      form.setValue("name", "My connection");
+      form.setValue("name", "newconnection");
       form.setValue("domain", "bpc-ai.atlassian.net");
     }
   }, []);
@@ -62,9 +66,11 @@ export default function AtlassianForm() {
       const headers = new Headers();
       headers.append("Content-Type", "application/json;charset=utf-8");
       headers.append("Authorization", `Bearer ${token}`);
-      const body = JSON.stringify(values);
-      console.log({ values });
-      return fetch("/api/new-connection", { headers, method: "POST", body });
+      return fetch("/api/new-connection", {
+        headers,
+        method: "POST",
+        body: JSON.stringify(values),
+      });
     };
     submitForm();
   }

@@ -29,6 +29,8 @@ API_EMBEDDER_MODEL_NAME=
 poetry run uvicorn api.app:create_app --factory
 ```
 
+### Authentication: get clerk token (todo)
+
 ### Ingest into index
 
 ```
@@ -40,7 +42,8 @@ curl localhost:8000/api/index -X POST \
 ### Search in index
 
 ```
-curl localhost:8000/api/search -X POST --data '{"query": "Swedish banking crisis", "confluence_space_key": "TW"}' -H "Content-Type: application/json"
+curl localhost:8000/api/search -X POST --data '{"query": "Swedish banking crisis", "connection_name": "newconnection"}' -H "Content-Type: application/json"
+  -H "Authorization: Bearer <clerk token>"
 ```
 
 ### Add connection

@@ -2123,20 +2123,19 @@ files = [
 
 [[package]]
 name = "pymilvus"
-version = "2.2.9"
+version = "2.2.8"
 description = "Python Sdk for Milvus"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pymilvus-2.2.9-py3-none-any.whl", hash = "sha256:4dc258305b9dfabad77219e6484964e34052cc90e65d5ebf65119b71d8e2506f"},
-    {file = "pymilvus-2.2.9.tar.gz", hash = "sha256:abf12261b7d24167ab7edb7c72372aeee695fef81d9d3b30efdea74d744c3f09"},
+    {file = "pymilvus-2.2.8-py3-none-any.whl", hash = "sha256:ccf427700c886b3cd73455b40fdac0bf2087243ba1eac5cb6d5745571d1ae467"},
+    {file = "pymilvus-2.2.8.tar.gz", hash = "sha256:f866c44a17403a9b7ba681f0c0a28aa8cdecba0f18b8c43f31879d627bd7d1e8"},
 ]
 
 [package.dependencies]
 environs = "<=9.5.0"
 grpcio = ">=1.49.1,<=1.53.0"
-numpy = "!=1.25.0rc1"
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
 ujson = ">=2.0.0"
@@ -3576,4 +3575,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0a2eebf96153770df97bdd170db0f124f576f53f85277af74c08c96decf7b537"
+content-hash = "21a4afeea2a20b20734f09644487e5ac09f3d0e9923155f1a305699fdfce8004"

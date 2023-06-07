@@ -2,7 +2,6 @@ import json
 from typing import List
 
 import requests
-import tqdm
 from api.lifespan import ml_models
 from core.create_connection import ConnectionEntity
 from core.index_confluence import (
@@ -32,8 +31,10 @@ def index_confluence_connection(connection: ConnectionEntity) -> None:
     space_keys = list_confluence_space_keys(connection)
     text_splitter = get_text_splitter()
     collection_name = get_collection_name_from_connection(connection.name)
+    print("Collection name", collection_name)
 
-    for space_key in tqdm.tqdm(space_keys):
+    for i, space_key in enumerate(space_keys):
+        drop_old = i == 0
         space_pages = get_confluence_pages_from_space(
             space_key,
             f"https://{connection.domain}/wiki",
@@ -46,12 +47,11 @@ def index_confluence_connection(connection: ConnectionEntity) -> None:
             ml_models["embedder"],
             connection_args={"host": "127.0.0.1", "port": "19530"},
             collection_name=collection_name,
-            drop_old=True,
+            drop_old=drop_old,
         )
 
 
 def index_connection(connection: ConnectionEntity) -> None:
-    print(connection)
     if connection.status != ConnectionStatus.Creating.value:  # type: ignore
         return
     index_confluence_connection(connection)

@@ -6,7 +6,7 @@ export default function IndexPage() {
       <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
         AskWizz: Connect your knowledge
       </h1>
-      <div className="flex h-24 flex-row items-center justify-center">
+      <div className="flex flex-row items-center justify-center">
         <Search />
       </div>
     </section>
