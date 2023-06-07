@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   LucideProps,
   Moon,
@@ -29,5 +30,6 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  askWizzLogo: () => <Image src="/logo.png" alt="me" width="128" height="64" />,
   plusSquare: PlusSquare,
 };
