@@ -7,6 +7,8 @@ import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import { Separator } from "./ui/separator";
+
 type JsonResponse = {
   answer: string;
   references: {
@@ -73,30 +75,34 @@ export default function Search() {
           placeholder="What is my company's policy..."
           maxLength={1000}
           onChange={(e) => setSearch(e.target.value)}
+          value={search}
         />
         <Button type="submit" onClick={handleClickOnSearch}>
           Search
         </Button>
       </div>
-      <div className="flex h-32 w-full flex-col space-x-2 ">
+      <div className="mt-8 flex h-32 w-full flex-col">
         {loading && <span>Loading...</span>}
         {response?.references?.map((result) => (
           <div key={result.page_content} className="flex flex-col">
-            <span className="font-bold">
-              Page title: {result.metadata.title}
-            </span>
-            <span>{result.page_content}</span>
-            <div>
-              <Button>
-                <Link
-                  href={result.metadata.source}
-                  rel="noopener"
-                  target="_blank"
-                >
-                  link
-                </Link>
-              </Button>
+            <Separator className="my-2" />
+            <div className="my-2 flex flex-row items-center space-x-2">
+              <span className="font-bold">
+                Page title: {result.metadata.title}
+              </span>
+              <div>
+                <Button>
+                  <Link
+                    href={result.metadata.source}
+                    rel="noopener"
+                    target="_blank"
+                  >
+                    link
+                  </Link>
+                </Button>
+              </div>
             </div>
+            <span>{result.page_content}</span>
           </div>
         ))}
       </div>
