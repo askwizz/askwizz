@@ -1,7 +1,12 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from api.authorization import TokenData, get_current_user
-from core.create_connection import create_connection
+from core.connection import (
+    ConnectionEntity,
+    create_connection,
+    delete_connection,
+    fetch_connections_of_user,
+)
 from core.index_connection import index_connection
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
@@ -29,7 +34,7 @@ def add_routes(app: FastAPI) -> None:
         if token_data.user_id is None:
             raise HTTPException(status_code=401, detail="Not authenticated")
         if db is None:
-            raise HTTPException(status_code=401, detail="Not authenticated")
+            raise HTTPException(status_code=401, detail="Database not connected")
 
         connection = create_connection(
             db,
@@ -42,3 +47,28 @@ def add_routes(app: FastAPI) -> None:
             ),
         )
         background_tasks.add_task(index_connection, connection)
+
+    @app.get("/api/connections")
+    async def connections(
+        token_data: Annotated[TokenData, Depends(get_current_user)],
+        db: Session = Depends(get_db),  # noqa: B008
+    ) -> List[ConnectionEntity]:
+        if token_data.user_id is None:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        if db is None:
+            raise HTTPException(status_code=401, detail="Database not connected")
+
+        return fetch_connections_of_user(db, token_data.user_id)
+
+    @app.delete("/api/connections/{connection_id}")
+    async def delete_connections(
+        connection_id: str,
+        token_data: Annotated[TokenData, Depends(get_current_user)],
+        db: Session = Depends(get_db),  # noqa: B008
+    ) -> None:
+        if token_data.user_id is None:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        if db is None:
+            raise HTTPException(status_code=401, detail="Database not connected")
+
+        delete_connection(db, token_data.user_id, connection_id)

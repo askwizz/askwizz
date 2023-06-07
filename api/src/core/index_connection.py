@@ -3,7 +3,7 @@ from typing import List
 
 import requests
 from api.lifespan import ml_models
-from core.create_connection import ConnectionEntity
+from core.connection import ConnectionEntity
 from core.index_confluence import (
     get_collection_name_from_connection,
     get_confluence_pages_from_space,
