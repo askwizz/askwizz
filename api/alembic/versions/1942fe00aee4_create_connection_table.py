@@ -25,6 +25,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.String(200), nullable=False),
         sa.Column("atlassian_token", sa.String(200), nullable=False),
         sa.Column("atlassian_email", sa.String(200), nullable=False),
+        sa.Column("domain", sa.String(400), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("status", sa.String(50), nullable=False),
     )

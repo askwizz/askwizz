@@ -11,6 +11,10 @@ def get_collection_name_from_space_key(space_key: str) -> str:
     return f"{space_key}Collection"
 
 
+def get_collection_name_from_connection(connection_name: str) -> str:
+    return f"Collection-connection-{connection_name}"
+
+
 def get_page_ids_from_space(space: str, wiki_url: str, email: str, token: str) -> list:
     parse_space_url = (
         f"{wiki_url}/rest/api/space/{space}/content?start=0&limit=500&type=page"
@@ -39,6 +43,13 @@ def get_text_splitter() -> RecursiveCharacterTextSplitter:
         length_function=len,
         separators=["\n\n", "\n", ".", " ", ""],
     )
+
+
+def get_confluence_pages_from_space(
+    space: str, wiki_url: str, email: str, token: str
+) -> list[Document]:
+    page_ids = get_page_ids_from_space(space, wiki_url, email, token)
+    return get_confluence_pages(wiki_url, email, token, space, page_ids)
 
 
 def index_confluence(space: str, wiki_url: str, email: str, token: str) -> None:

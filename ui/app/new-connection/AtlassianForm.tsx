@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -22,6 +22,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Too short").max(50, "Too long"),
   email: z.string().email("Invalid email address"),
   token: z.string(),
+  domain: z.string(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -36,14 +37,20 @@ export default function AtlassianForm() {
       email: "",
       token: "",
       name: "",
+      domain: "",
     },
   });
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_DEBUG === "true") {
       form.setValue("email", "maximeduvalsy@gmail.com");
-      form.setValue("token", "test");
+      // form.setValue("token", "test");
+      form.setValue(
+        "token",
+        "ATATT3xFfGF0LIyG73Yf66DBMLqkDaGaEykYY9WS_noptQ5vQf5Ir-8UUa7_8pfBuwCRpOcg2rAACUj6OoMHXBT7nAW9cXcs0XHc0KTsOBtttm6tM3DtXCcD1EERJ9PqUoi8tlpOi6KQzEGcXQOLakzVsopcKjnyh-2k6UIFpOl-cfKgJsAfN0U=717F7F23",
+      );
       form.setValue("name", "My connection");
+      form.setValue("domain", "bpc-ai.atlassian.net");
     }
   }, []);
 
@@ -73,6 +80,19 @@ export default function AtlassianForm() {
               <FormLabel>Name of the connection</FormLabel>
               <FormControl>
                 <Input placeholder="" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="domain"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Atlassian domain</FormLabel>
+              <FormControl>
+                <Input placeholder="bpc-ai.atlassian.net" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

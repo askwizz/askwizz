@@ -2,7 +2,8 @@ from typing import Annotated
 
 from api.authorization import TokenData, get_current_user
 from core.create_connection import create_connection
-from fastapi import Depends, FastAPI, HTTPException
+from core.index_connection import index_connection
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -14,6 +15,7 @@ class Connection(BaseModel):
     name: str
     email: str
     token: str
+    domain: str
 
 
 def add_routes(app: FastAPI) -> None:
@@ -21,6 +23,7 @@ def add_routes(app: FastAPI) -> None:
     async def new_connection(
         connection_data: Connection,
         token_data: Annotated[TokenData, Depends(get_current_user)],
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),  # noqa: B008
     ) -> None:
         if token_data.user_id is None:
@@ -28,12 +31,14 @@ def add_routes(app: FastAPI) -> None:
         if db is None:
             raise HTTPException(status_code=401, detail="Not authenticated")
 
-        create_connection(
+        connection = create_connection(
             db,
             ConnectionCreate(
-                name=connection_data.name,
                 atlassian_email=connection_data.email,
                 atlassian_token=connection_data.token,
+                domain=connection_data.domain,
+                name=connection_data.name,
                 user_id=token_data.user_id,
             ),
         )
+        background_tasks.add_task(index_connection, connection)
