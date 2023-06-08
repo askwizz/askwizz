@@ -1,5 +1,5 @@
-import click
-from core.index_confluence import index_confluence
+import esearch.click
+from esearch.core.index_confluence import index_confluence
 
 
 @click.command("ingest_confluence")

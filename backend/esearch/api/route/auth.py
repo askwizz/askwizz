@@ -1,7 +1,7 @@
 import urllib.parse
 
 import requests
-from api.settings import AppSettings
+from esearch.api.settings import AppSettings
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import RedirectResponse
 

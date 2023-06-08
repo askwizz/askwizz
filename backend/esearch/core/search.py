@@ -1,10 +1,10 @@
 import os
 
-from api.lifespan import ml_models
-from core.index_confluence import (
+from esearch.api.lifespan import ml_models
+from esearch.core.index_confluence import (
     get_collection_name_from_connection,
 )
-from core.models.rwkv import LLMModel
+from esearch.core.models.rwkv import LLMModel
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.vectorstores import Milvus

@@ -1,11 +1,11 @@
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from typing import AsyncGenerator, Callable
 
-from core.models.embeddings import load_embedder
-from core.models.rwkv import LLMModel
+from esearch.core.models.embeddings import load_embedder
+from esearch.core.models.rwkv import LLMModel
 from fastapi import FastAPI
 
-from api.settings import AppSettings
+from esearch.api.settings import AppSettings
 
 ml_models = {}
 

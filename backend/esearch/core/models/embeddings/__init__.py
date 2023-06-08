@@ -9,11 +9,11 @@ def load_embedder(model_name: str) -> Embeddings:
     print(f"Loading embedder {model_name}")
     match model_name:
         case "e5":
-            from core.models.embeddings.e5 import E5Basev2
+            from esearch.core.models.embeddings.e5 import E5Basev2
 
             return E5Basev2()
         case "huggingface":
-            from core.models.embeddings.huggingface import CustomHuggingFaceEmbeddings
+            from esearch.core.models.embeddings.huggingface import CustomHuggingFaceEmbeddings
 
             return CustomHuggingFaceEmbeddings()
         case _:

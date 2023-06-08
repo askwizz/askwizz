@@ -26,7 +26,7 @@ API_EMBEDDER_MODEL_NAME=
 ### Start server
 
 ```
-poetry run uvicorn api.app:create_app --factory
+poetry run uvicorn esearch.api.app:create_app --factory
 ```
 
 ### Authentication: get clerk token (todo)
@@ -57,5 +57,5 @@ curl localhost:8000/api/new-connection -X POST \
 ## Development
 
 ```
-poetry run uvicorn api.app:create_app --reload
+poetry run uvicorn esearch.api.app:create_app --reload
 ```

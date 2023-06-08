@@ -1,5 +1,5 @@
 import requests
-from api.lifespan import ml_models
+from esearch.api.lifespan import ml_models
 from langchain.docstore.document import Document
 from langchain.document_loaders import ConfluenceLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter

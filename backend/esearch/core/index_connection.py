@@ -2,9 +2,9 @@ import json
 from typing import List
 
 import requests
-from api.lifespan import ml_models
-from core.connection import ConnectionEntity
-from core.index_confluence import (
+from esearch.api.lifespan import ml_models
+from esearch.core.connection import ConnectionEntity
+from esearch.core.index_confluence import (
     get_collection_name_from_connection,
     get_confluence_pages_from_space,
     get_text_splitter,
@@ -12,7 +12,7 @@ from core.index_confluence import (
 from langchain.vectorstores import Milvus
 from requests.auth import HTTPBasicAuth
 
-from db.models.connection import ConnectionStatus
+from esearch.db.models.connection import ConnectionStatus
 
 
 def list_confluence_space_keys(connection: ConnectionEntity) -> List[str]:

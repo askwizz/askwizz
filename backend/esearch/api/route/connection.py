@@ -1,19 +1,19 @@
 from typing import Annotated, List
 
-from api.authorization import TokenData, get_current_user
-from core.connection import (
+from esearch.api.authorization import TokenData, get_current_user
+from esearch.core.connection import (
     ConnectionEntity,
     create_connection,
     delete_connection,
     fetch_connections_of_user,
 )
-from core.index_connection import index_connection
+from esearch.core.index_connection import index_connection
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from db.engine import get_db
-from db.models.connection import ConnectionCreate
+from esearch.db.engine import get_db
+from esearch.db.models.connection import ConnectionCreate
 
 
 class Connection(BaseModel):

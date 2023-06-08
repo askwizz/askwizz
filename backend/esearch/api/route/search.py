@@ -1,8 +1,8 @@
 from typing import Annotated, Any
 
-from api.authorization import TokenData, get_current_user
-from api.lifespan import ml_models
-from core.search import SearchRequest, search
+from esearch.api.authorization import TokenData, get_current_user
+from esearch.api.lifespan import ml_models
+from esearch.core.search import SearchRequest, search
 from fastapi import Depends, FastAPI
 from langchain.docstore.document import Document
 from pydantic import BaseModel

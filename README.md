@@ -38,7 +38,7 @@ Get your ip address:
 ifconfig -u | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -1
 ```
 
-Create `./api/.env`.
+Create `./backend/.env`.
 
 Variables needed:
 
@@ -51,9 +51,9 @@ API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://wizz:wizzpsswd123@<your ip ad
 ```
 
 ```console
-cd api
+cd backend
 poetry install
-poetry run uvicorn api.app:create_app --factory
+poetry run uvicorn esearch.api.app:create_app --factory
 ```
 
 Server starts at http://127.0.0.1:8000

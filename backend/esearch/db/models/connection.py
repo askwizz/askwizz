@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session
 
-from db.engine import Base
+from esearch.db.engine import Base
 
 
 class ConnectionCreate(BaseModel):

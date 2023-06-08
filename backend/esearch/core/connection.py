@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from db.models.connection import (
+from esearch.db.models.connection import (
     ConnectionCreate,
     ConnectionRow,
     create_connection_in_db,
