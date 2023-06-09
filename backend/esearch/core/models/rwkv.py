@@ -1,8 +1,51 @@
+import asyncio
 import os
-from typing import Callable, Type
+from typing import Any, Callable, Coroutine, Type
 
 from rwkv.model import RWKV
 from rwkv.utils import PIPELINE, PIPELINE_ARGS
+
+
+class ASYNC_PIPELINE(PIPELINE):
+    async def generate(
+        self, ctx, token_count=100, args=PIPELINE_ARGS(), callback=None, state=None
+    ):
+        all_tokens = []
+        out_last = 0
+        out_str = ""
+        occurrence = {}
+        for i in range(token_count):
+            # forward & adjust prob.
+            tokens = self.encode(ctx) if i == 0 else [token]
+            while len(tokens) > 0:
+                out, state = self.model.forward(tokens[: args.chunk_len], state)
+                tokens = tokens[args.chunk_len :]
+
+            for n in args.token_ban:
+                out[n] = -float("inf")
+            for n in occurrence:
+                out[n] -= args.alpha_presence + occurrence[n] * args.alpha_frequency
+
+            # sampler
+            token = self.sample_logits(
+                out, temperature=args.temperature, top_p=args.top_p, top_k=args.top_k
+            )
+            if token in args.token_stop:
+                break
+            all_tokens += [token]
+            if token not in occurrence:
+                occurrence[token] = 1
+            else:
+                occurrence[token] += 1
+
+            # output
+            tmp = self.decode(all_tokens[out_last:])
+            if "\ufffd" not in tmp:  # is valid utf-8 string?
+                await asyncio.sleep(0)
+                await callback(tmp)
+                out_str += tmp
+                out_last = i + 1
+        return out_str
 
 
 # todo - see if langchain already provides abtractions
@@ -15,7 +58,7 @@ class LLMModel:
         token_config_path = os.path.join(
             os.path.dirname(__file__), "20B_tokenizer.json"
         )
-        pipeline = PIPELINE(model, token_config_path)
+        pipeline = ASYNC_PIPELINE(model, token_config_path)
         args = PIPELINE_ARGS(
             temperature=0.2,
             top_p=0.7,
@@ -35,9 +78,11 @@ class LLMModel:
     def from_path(cls: Type["LLMModel"], path: str) -> "LLMModel":
         return cls(path=path)
 
-    def answer_prompt(
-        self: "LLMModel", prompt: str, callback: Callable[[str], None]
+    async def answer_prompt(
+        self: "LLMModel",
+        prompt: str,
+        callback: Callable[[str], None] | Callable[[str], Coroutine[Any, Any, None]],
     ) -> str:
-        return self.pipeline.generate(
+        return await self.pipeline.generate(
             prompt, args=self.args, callback=callback, token_count=50
         )

@@ -1,15 +1,19 @@
+import asyncio
 import os
+from typing import Any, Callable, Coroutine
+
+from dotenv import load_dotenv
+from fastapi import WebSocket
+from langchain.docstore.document import Document
+from langchain.vectorstores import Milvus
+from langchain.vectorstores.base import VectorStore
+from pydantic import BaseModel
 
 from esearch.api.lifespan import ml_models
 from esearch.core.index_confluence import (
     get_collection_name_from_connection,
 )
 from esearch.core.models.rwkv import LLMModel
-from dotenv import load_dotenv
-from langchain.docstore.document import Document
-from langchain.vectorstores import Milvus
-from langchain.vectorstores.base import VectorStore
-from pydantic import BaseModel
 
 load_dotenv()
 
@@ -47,27 +51,52 @@ Detailed expert answer:
 """  # noqa: E501
 
 
-def get_answer_and_documents(
-    payload: SearchRequest, vector_db: VectorStore, llm: LLMModel
+def log_generation(websocket: WebSocket) -> Callable[[str], Coroutine[Any, Any, None]]:
+    async def send_string(s: str) -> None:
+        await websocket.send_json({"type": "answer", "answer": s})
+
+    return send_string
+
+
+async def get_answer_and_documents(
+    payload: SearchRequest,
+    vector_db: VectorStore,
+    llm: LLMModel,
+    websocket: WebSocket | None,
 ) -> tuple[list[Document], str]:
     print(f"Providing answer to question {payload.query}")
     question = payload.query
-    relevant_documents = vector_db.similarity_search(question, k=10)
+    relevant_documents: list[Document] = vector_db.similarity_search(question, k=10)
+    serialized_documents = [d.json() for d in relevant_documents]
+    message = {"type": "documents", "documents": serialized_documents}
+    if websocket is not None:
+        await websocket.send_json(message)
+        await asyncio.sleep(0)
+    prompt = generate_prompt(question, relevant_documents)
+    print("prompting with")
+    print(prompt)
+
+    llm_callback = (
+        log_generation_live if websocket is None else log_generation(websocket)
+    )
     answer = (
-        llm.answer_prompt(
-            generate_prompt(question, relevant_documents), log_generation_live
+        await llm.answer_prompt(
+            generate_prompt(question, relevant_documents), llm_callback
         )
         if payload.generate_answer
         else ""
     )
+
     return relevant_documents, answer
 
 
-def search(payload: SearchRequest, llm: LLMModel) -> tuple[list[Document], str]:
+async def search(
+    payload: SearchRequest, llm: LLMModel, websocket: WebSocket | None = None
+) -> tuple[list[Document], str]:
     vector_db = Milvus(
         embedding_function=ml_models["embedder"],
         connection_args={"host": "127.0.0.1", "port": "19530"},
         collection_name=get_collection_name_from_connection(payload.connection_name),
     )
 
-    return get_answer_and_documents(payload, vector_db, llm)
+    return await get_answer_and_documents(payload, vector_db, llm, websocket)

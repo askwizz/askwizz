@@ -2,30 +2,57 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import useWebSocket from "react-use-websocket";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { Separator } from "./ui/separator";
 
-type JsonResponse = {
-  answer: string;
-  references: {
-    metadata: {
-      id: string;
-      source: string;
-      title: string;
-    };
-    page_content: string;
-  }[];
+type Reference = {
+  metadata: {
+    id: string;
+    source: string;
+    title: string;
+  };
+  page_content: string;
 };
+
+type Message =
+  | {
+      type: "answer";
+      answer: string;
+    }
+  | {
+      type: "documents";
+      documents: string[];
+    };
 
 export default function Search() {
   const [search, setSearch] = useState("What is a bad bank ?");
-  const [response, setResponse] = useState<JsonResponse | null>(null);
+  const [references, setReferences] = useState<Reference[]>([]);
+  const [answer, setAnswer] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+
+  const { sendMessage, lastMessage } = useWebSocket(
+    "ws://localhost:8000/api/search",
+  );
+
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setLoading(false);
+      const parsedMessage: Message = JSON.parse(lastMessage.data);
+      if (parsedMessage.type === "answer") {
+        setAnswer((oldAnswer) => oldAnswer.concat(parsedMessage.answer));
+      } else {
+        setReferences((oldReferences) =>
+          oldReferences.concat(
+            parsedMessage.documents.map((d) => JSON.parse(d)),
+          ),
+        );
+      }
+    }
+  }, [lastMessage]);
 
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
@@ -42,28 +69,13 @@ export default function Search() {
     const data = {
       query: search,
       connection_name: "newconnection",
-      generate_answer: false,
+      generate_answer: true,
     };
 
-    const fetchSearchResults = async () => {
-      const token = await getToken();
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json;charset=utf-8");
-      headers.append("Authorization", `Bearer ${token}`);
-      return await fetch("/api/search", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(data),
-      });
-    };
-    setResponse(null);
+    setReferences([]);
+    setAnswer("");
     setLoading(true);
-    fetchSearchResults()
-      .then(async (response) => {
-        const parsedResponse = (await response.json()) as JsonResponse;
-        setResponse(parsedResponse);
-      })
-      .finally(() => setLoading(false));
+    sendMessage(JSON.stringify(data));
   };
 
   return (
@@ -83,7 +95,13 @@ export default function Search() {
       </div>
       <div className="mt-8 flex h-32 w-full flex-col">
         {loading && <span>Loading...</span>}
-        {response?.references?.map((result) => (
+        {references.length > 0 && (
+          <>
+            <span className="font-bold">Answer</span>
+            <span>{answer && answer}...</span>
+          </>
+        )}
+        {references?.map((result) => (
           <div key={result.page_content} className="flex flex-col">
             <Separator className="my-2" />
             <div className="my-2 flex flex-row items-center space-x-2">
