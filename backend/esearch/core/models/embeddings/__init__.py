@@ -13,7 +13,9 @@ def load_embedder(model_name: str) -> Embeddings:
 
             return E5Basev2()
         case "huggingface":
-            from esearch.core.models.embeddings.huggingface import CustomHuggingFaceEmbeddings
+            from esearch.core.models.embeddings.huggingface import (
+                CustomHuggingFaceEmbeddings,
+            )
 
             return CustomHuggingFaceEmbeddings()
         case _:

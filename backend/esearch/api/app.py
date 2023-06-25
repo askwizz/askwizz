@@ -7,9 +7,6 @@ import esearch.api.route.indexing
 import esearch.api.route.search
 from esearch.api.lifespan import get_lifespan
 from esearch.api.settings import AppSettings
-from esearch.db.engine import Base, engine
-
-Base.metadata.create_all(bind=engine)
 
 
 def create_app_with_settings(app_settings: AppSettings) -> FastAPI:

@@ -34,7 +34,7 @@ def get_context_from_documents(documents: list[Document]) -> str:
 
 def generate_prompt(question: str, relevant_documents: list[Document]) -> str:
     context = get_context_from_documents(relevant_documents)
-    return f"""Q & A 
+    return f"""Q & A
 Given the following extracted parts of multiple documents and a question, create a final answer with references.
 If you don't know the answer, just say that you don't know. Don't try to make up an answer.
 
