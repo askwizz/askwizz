@@ -19,7 +19,7 @@ API_OAUTH_ATLASSIAN__CLIENT_SECRET=
 
 # path to rwkv llm model
 API_RWKV_MODEL_PATH=
-# embedder model name (e5 or huggingface supported)
+# embedder model name ("e5" or "huggingface" supported)
 API_EMBEDDER_MODEL_NAME=
 ```
 
@@ -29,14 +29,14 @@ API_EMBEDDER_MODEL_NAME=
 poetry run uvicorn esearch.api.app:create_app --factory
 ```
 
-### Authentication: get clerk token (todo)
+### Authentication: get clerk token
 
-### Ingest into index
+TODO
+
+### Ingest test data into index
 
 ```
-curl localhost:8000/api/index -X POST \
-          --data '{ "atlassian_email": "maximeduvalsy@gmail.com", "atlassian_token": <token>, "space_key": "TW", "wiki_url": "https://bpc-ai.atlassian.net/wiki" }' \
-          -H "Content-Type: application/json"
+curl localhost:8000/api/index -X POST --data '{ "atlassian_email": <email>, "atlassian_token": <token>, "space_key": <spake_key>, "wiki_url": "https://<team>.atlassian.net/wiki" }' -H "Content-Type: application/json"
 ```
 
 ### Search in index

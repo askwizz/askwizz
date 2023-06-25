@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List
 
 import torch.nn.functional as func
@@ -5,10 +6,7 @@ from langchain.embeddings.base import Embeddings
 from pydantic import BaseModel, Extra
 from torch import Tensor
 from tqdm import tqdm
-from transformers import (
-    AutoModel,
-    AutoTokenizer,
-)
+from transformers import AutoModel, AutoTokenizer
 
 
 def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
@@ -45,7 +43,7 @@ class E5Basev2(BaseModel, Embeddings):
         return embeddings.detach().numpy().tolist()
 
     def embed_documents(self: "E5Basev2", texts: List[str]) -> List[List[float]]:
-        print(f"Embedding {len(texts)} documents with E5Basev2...")
+        logging.info(f"Embedding {len(texts)} documents with E5Basev2...")
         all_embeddings = []
         for i in tqdm(range(0, len(texts), self.batch_size)):
             embeddings = self._embed_texts(texts[i : i + self.batch_size], "passage: ")

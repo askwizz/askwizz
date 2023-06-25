@@ -1,3 +1,4 @@
+import logging
 import requests
 from esearch.api.lifespan import ml_models
 from langchain.docstore.document import Document
@@ -60,15 +61,15 @@ def index_confluence(space: str, wiki_url: str, email: str, token: str) -> None:
             --email "maximeduvalsy@gmail.com" \
             --token ""
     """
-    print("Ingesting confluence space into vector database...")
+    logging.debug("Ingesting confluence space into vector database...")
     page_ids = get_page_ids_from_space(space, wiki_url, email, token)
-    print("Got page ids.")
+    logging.debug("Got page ids.")
     confluence_pages = get_confluence_pages(wiki_url, email, token, space, page_ids)
-    print("Extracted documents.")
+    logging.debug("Extracted documents.")
 
     text_splitter = get_text_splitter()
     confluence_chunks = text_splitter.split_documents(confluence_pages)
-    print("Split documents.")
+    logging.debug("Split documents.")
 
     Milvus.from_documents(
         confluence_chunks,
@@ -77,4 +78,4 @@ def index_confluence(space: str, wiki_url: str, email: str, token: str) -> None:
         collection_name=get_collection_name_from_space_key(space),
         drop_old=True,
     )
-    print("Embedded documents.")
+    logging.debug("Embedded documents.")

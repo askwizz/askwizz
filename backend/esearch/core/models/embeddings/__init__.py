@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 from langchain.embeddings.base import Embeddings
@@ -6,7 +7,7 @@ EmbeddingModel = Literal["e5"] | Literal["huggingface"]
 
 
 def load_embedder(model_name: str) -> Embeddings:
-    print(f"Loading embedder {model_name}")
+    logging.info(f"Loading embedder {model_name}")
     match model_name:
         case "e5":
             from esearch.core.models.embeddings.e5 import E5Basev2

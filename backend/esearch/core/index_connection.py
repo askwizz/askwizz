@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List
 
 import requests
@@ -23,7 +24,7 @@ def list_confluence_space_keys(connection: ConnectionEntity) -> List[str]:
     if response.status_code != 200:
         raise Exception("Could not get space keys from confluence space")
     json_response = json.loads(response.text)
-    print("Got response", json_response)
+    logging.debug("Got response", json_response)
     return [result["key"] for result in json_response.get("results", [])]
 
 
@@ -31,7 +32,7 @@ def index_confluence_connection(connection: ConnectionEntity) -> None:
     space_keys = list_confluence_space_keys(connection)
     text_splitter = get_text_splitter()
     collection_name = get_collection_name_from_connection(connection.name)
-    print("Collection name", collection_name)
+    logging.debug("Collection name", collection_name)
 
     for i, space_key in enumerate(space_keys):
         drop_old = i == 0

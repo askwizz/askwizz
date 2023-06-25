@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -36,6 +37,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Tok
         if user_id is None:
             raise credentials_exception  # noqa: TRY301
         token_data = TokenData(user_id=user_id)
-    except JWTError:
+    except JWTError as e:
+        logging.exception(e)
         raise credentials_exception
     return token_data
