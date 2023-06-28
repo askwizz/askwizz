@@ -39,7 +39,7 @@ services:
     depends_on:
       - "milvus-etcd"
       - "milvus-minio"
-  
+
   db:
     image: postgres:15
     restart: always
@@ -51,6 +51,7 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+
   api:
     build: ./backend
     environment:

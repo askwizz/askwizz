@@ -16,7 +16,9 @@ SaaS PoC by BPC
 Start Milvus and Postgres
 
 ```
-docker compose up -d
+docker-compose up -d
+# On darwin
+COMPOSE_DOCKER_CLI_BUILD=1 DOCKECOMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_DEFAULT_PLATFORM=linux/amd64 docker-compose up --build
 ```
 
 Download a rwkv model from [here](https://huggingface.co/BlinkDL/rwkv-4-raven/blob/main/RWKV-4-Raven-1B5-v12-Eng98%25-Other2%25-20230520-ctx4096.pth).

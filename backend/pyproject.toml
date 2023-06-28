@@ -26,7 +26,10 @@ sqlalchemy = "^2.0.15"
 psycopg2-binary = "^2.9.6"
 alembic = "^1.11.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-torch = {version = "^2.0.0", source = "torch-cpu"}
+torch = [
+  {version = "^2.0.0", source = "torch-cpu"},
+  {version = "^2.0.0", platform = "darwin", source = "pypi" },
+]
 
 
 [tool.poetry.group.dev.dependencies]
