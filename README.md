@@ -11,58 +11,50 @@ SaaS PoC by BPC
 
 ## Development
 
-### Start milvus
+### Start the API server
+
+Start Milvus and Postgres
 
 ```
-cd milvus
 docker compose up -d
 ```
 
-It should start three services: milvus-standalone, milvus-minio and milvus-etcd
-
-### Start postgres
-
-Launch the root docker compose that has a postgres service.
+Download a rwkv model from [here](https://huggingface.co/BlinkDL/rwkv-4-raven/blob/main/RWKV-4-Raven-1B5-v12-Eng98%25-Other2%25-20230520-ctx4096.pth).
+Copy it to `./backend/tmp/rwkv-model.pth`.
 
 ```
-docker-compose up -d
+mkdir backend/tmp/
+wget https://huggingface.co/BlinkDL/rwkv-4-raven/resolve/main/RWKV-4-Raven-1B5-v12-Eng98%25-Other2%25-20230520-ctx4096.pth -O ./backend/tmp/
 ```
 
-For now the env variables (password, etc...) are public.
-
-### Start API server
-
-Get your ip address:
+Create `./backend/.env`:
 
 ```
-ifconfig -u | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -1
+API_RWKV_MODEL_PATH="./tmp/rwkv-model.pth"
+API_EMBEDDER_MODEL_NAME="e5"
+API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://postgres:password@127.0.0.1:5432/esearch"
 ```
 
-Create `./backend/.env`.
-
-Variables needed:
-
-```
-API_OAUTH_ATLASSIAN__CLIENT_ID="" # can be empty for now
-API_OAUTH_ATLASSIAN__CLIENT_SECRET=""  # can be empty for now
-API_RWKV_MODEL_PATH=""  # path to a rwkv model. pth format. Download one here for example: https://huggingface.co/BlinkDL/rwkv-4-raven/blob/main/RWKV-4-Raven-1B5-v12-Eng98%25-Other2%25-20230520-ctx4096.pth
-API_EMBEDDER_MODEL_NAME=""  # e5 or huggingface as of now. Pick e5 for best performance
-API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://wizz:wizzpsswd123@<your ip address>:5432/ask"  # postgres database
-```
+Install backend Pyton environment using Poetry:
 
 ```console
 cd backend
 poetry install
-poetry run uvicorn esearch.api.app:create_app --factory
 ```
-
-Server starts at http://127.0.0.1:8000
 
 Migrate database to the latest state:
 
+```console
+poetry run alembic upgrade head
 ```
-poe al upgrade head
+
+Start server
+
+```console
+poetry run uvicorn esearch.api.app:create_app --factory
 ```
+
+Server starts at http://127.0.0.1:8000.
 
 ### Start UI server
 

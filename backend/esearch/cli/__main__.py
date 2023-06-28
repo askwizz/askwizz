@@ -1,4 +1,4 @@
-import esearch.click
+import click
 from esearch.cli.index_confluence import ingest_confluence_command
 
 _cli = click.Group(

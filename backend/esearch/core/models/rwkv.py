@@ -36,8 +36,13 @@ class LLMModel:
         return cls(path=path)
 
     def answer_prompt(
-        self: "LLMModel", prompt: str, callback: Callable[[str], None]
+        self: "LLMModel",
+        prompt: str,
+        callback: Callable[[str], None] | None = None,
     ) -> str:
         return self.pipeline.generate(
-            prompt, args=self.args, callback=callback, token_count=50
+            prompt,
+            args=self.args,
+            callback=callback,
+            token_count=50,
         )

@@ -52,8 +52,6 @@ def add_routes(app: FastAPI, app_settings: AppSettings):
             )
         )
 
-        print(authorization_url)
-
         return RedirectResponse(url=authorization_url)
 
     @app.get("/api/connect/atlassian/callback")

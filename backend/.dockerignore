@@ -163,7 +163,3 @@ cython_debug/
 tmp/
 indexer/
 notebooks/
-
-# Docker stuff
-.dockerfile
-Dockerfile

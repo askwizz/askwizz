@@ -1,19 +1,28 @@
-from typing import Any, Generator
+from typing import Generator
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-SQLALCHEMY_DATABASE_URL = (
-    "postgresql+psycopg2://wizz:wizzpsswd123@0.0.0.0:5432/ask"
-)
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from sqlalchemy.orm.session import Session
 
 Base = declarative_base()
 
 
-def get_db() -> Generator[Any, None, None]:
+def get_database_url_from_env() -> str:
+    database_url = os.environ.get("API_SQLALCHEMY_DATABASE_URL")
+    assert (
+        database_url is not None
+    ), "API_SQLALCHEMY_DATABASE_URL environment variable is not set"
+    return database_url
+
+
+def get_db() -> Generator[Session, None, None]:
+    # FIXME pass db url as argument
+    database_url = get_database_url_from_env()
+    engine = create_engine(database_url)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
     db = SessionLocal()
     try:
         yield db
