@@ -1,4 +1,5 @@
 import click
+
 from esearch.core.index_confluence import index_confluence
 
 

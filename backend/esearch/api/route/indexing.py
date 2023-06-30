@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from esearch.api.authorization import TokenData, get_current_user
-from esearch.core.index_confluence import index_confluence
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
+
+from esearch.api.authorization import TokenData, get_current_user
+from esearch.core.index_confluence import index_confluence
 
 
 class IndexRequest(BaseModel):

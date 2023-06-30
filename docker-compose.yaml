@@ -54,18 +54,27 @@ services:
 
   api:
     build: ./backend
+    container_name: api
     environment:
       - API_OAUTH_ATLASSIAN__CLIENT_ID=""
       - API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
-      - API_RWKV_MODEL_PATH="./tmp/rwkv-model.pth"
-      - API_EMBEDDER_MODEL_NAME="e5"
+      - API_RWKV_MODEL_PATH=./tmp/rwkv-model
+      - API_EMBEDDER_MODEL_NAME=e5
       - API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://postgres:password@db:5432/esearch"
     volumes:
       - ./backend/tmp/rwkv-model.pth:/app/tmp/rwkv-model.pth
+      - ./backend/tmp:/root/.cache/huggingface/hub
     ports:
       - "8000:8000"
     depends_on:
       - "db"
+
+  ui:
+    build: ./ui
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "api"
 
 volumes:
   db:
