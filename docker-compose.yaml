@@ -60,7 +60,7 @@ services:
       - API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
       - API_RWKV_MODEL_PATH=./tmp/rwkv-model
       - API_EMBEDDER_MODEL_NAME=e5
-      - API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://postgres:password@db:5432/esearch"
+      - API_SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://postgres:password@db:5432/esearch
     volumes:
       - ./backend/tmp/rwkv-model.pth:/app/tmp/rwkv-model.pth
       - ./backend/tmp:/root/.cache/huggingface/hub

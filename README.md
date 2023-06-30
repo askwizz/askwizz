@@ -67,3 +67,14 @@ yarn dev
 ```
 
 Preview is available at http://localhost:3000.
+
+## Deployment
+
+### Start the services
+
+```
+docker-compose up
+# Connect to api to run migrations
+docker exec -it api bash
+poetry run alembic upgrade head
+```
