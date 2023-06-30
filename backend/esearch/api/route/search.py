@@ -1,11 +1,12 @@
 from typing import Annotated, Any
 
-from esearch.api.authorization import TokenData, get_current_user
-from esearch.api.lifespan import ml_models
-from esearch.core.search import SearchRequest, search
 from fastapi import Depends, FastAPI
 from langchain.docstore.document import Document
 from pydantic import BaseModel
+
+from esearch.api.authorization import TokenData, get_current_user
+from esearch.api.lifespan import ml_models
+from esearch.core.search import SearchRequest, search
 
 
 class SearchMatch(BaseModel):

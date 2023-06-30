@@ -1,11 +1,13 @@
 import logging
+
 import requests
-from esearch.api.lifespan import ml_models
 from langchain.docstore.document import Document
 from langchain.document_loaders import ConfluenceLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Milvus
 from requests.auth import HTTPBasicAuth
+
+from esearch.api.lifespan import ml_models
 
 
 def get_collection_name_from_space_key(space_key: str) -> str:

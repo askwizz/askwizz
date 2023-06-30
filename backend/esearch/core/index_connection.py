@@ -3,6 +3,9 @@ import logging
 from typing import List
 
 import requests
+from langchain.vectorstores import Milvus
+from requests.auth import HTTPBasicAuth
+
 from esearch.api.lifespan import ml_models
 from esearch.core.connection import ConnectionEntity
 from esearch.core.index_confluence import (
@@ -10,9 +13,6 @@ from esearch.core.index_confluence import (
     get_confluence_pages_from_space,
     get_text_splitter,
 )
-from langchain.vectorstores import Milvus
-from requests.auth import HTTPBasicAuth
-
 from esearch.db.models.connection import ConnectionStatus
 
 

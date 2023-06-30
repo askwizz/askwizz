@@ -40,6 +40,7 @@ pyright = "^1.1.309"
 httpx = "^0.24.1"
 pytest = "^7.3.1"
 poethepoet = "^0.20.0"
+ruff = "^0.0.275"
 
 
 [[tool.poetry.source]]
