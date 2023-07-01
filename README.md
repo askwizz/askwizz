@@ -55,14 +55,14 @@ poetry run alembic upgrade head
 Start server
 
 ```console
-poetry run uvicorn esearch.api.app:create_app --factory
+poetry run uvicorn esearch.api.app:create_app --reload
 ```
 
 Server starts at http://127.0.0.1:8000.
 
 ### Start UI server
 
-Create `./ui/.env.local`, fill with your key from Clerk Dashboard:
+Create `./ui/.env.development.local`, fill with your key from Clerk Dashboard:
 
 ```
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -72,6 +72,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 NEXT_PUBLIC_DEBUG=true
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<your_key>
 CLERK_SECRET_KEY=<your_secret>
+API_HOST="127.0.0.1"
 ```
 
 To get your Clerk key and secret:
