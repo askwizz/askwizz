@@ -1,13 +1,10 @@
-import logging
+from typing import Any, List
 
 import requests
+from atlassian import Confluence
 from langchain.docstore.document import Document
-from langchain.document_loaders import ConfluenceLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Milvus
 from requests.auth import HTTPBasicAuth
-
-from esearch.api.lifespan import ml_models
 
 
 def get_collection_name_from_space_key(space_key: str) -> str:
@@ -29,14 +26,36 @@ def get_page_ids_from_space(space: str, wiki_url: str, email: str, token: str) -
     return [p["id"] for p in pages]
 
 
-def get_confluence_pages(
-    wiki_url: str, email: str, token: str, space_key: str, page_ids: list[str]
-) -> list[Document]:
-    loader = ConfluenceLoader(url=wiki_url, username=email, api_key=token)
-    documents = loader.load(
-        space_key=space_key, page_ids=page_ids, include_attachments=False, limit=50
+def get_confluence_pages(domain: str, email: str, token: str) -> list[Document]:
+    confluence = Confluence(
+        url=f"https://{domain}", username=email, password=token, cloud=True
     )
-    return documents[: len(documents) // 2]
+    spaces = confluence.get_all_spaces(start=0, limit=500, expand=None)
+    if not spaces:
+        return []
+    space_results: List[Any] = spaces["results"]  # type: ignore
+    pages = []
+    for space in space_results:
+        space_pages = confluence.get_all_pages_from_space(
+            space["key"],
+            start=0,
+            limit=100,
+            status=None,
+            expand="body.storage,version",
+            content_type="page",
+        )
+        pages.extend(space_pages)
+    return [
+        Document(
+            page_content=page["body"]["storage"]["value"],
+            metadata={
+                "title": page["title"],
+                "id": page["id"],
+                "path": page["_links"]["webui"],
+            },
+        )
+        for page in pages
+    ]
 
 
 def get_text_splitter() -> RecursiveCharacterTextSplitter:
@@ -48,36 +67,7 @@ def get_text_splitter() -> RecursiveCharacterTextSplitter:
     )
 
 
-def get_confluence_pages_from_space(
-    space: str, wiki_url: str, email: str, token: str
+def get_confluence_pages_from_domain(
+    domain: str, email: str, token: str
 ) -> list[Document]:
-    page_ids = get_page_ids_from_space(space, wiki_url, email, token)
-    return get_confluence_pages(wiki_url, email, token, space, page_ids)
-
-
-def index_confluence(space: str, wiki_url: str, email: str, token: str) -> None:
-    """Ingest confluence space into a database.
-    poetry run python -m indexer.cli ingest_confluence \
-            --space "TW" \
-            --wiki_url "https://bpc-ai.atlassian.net/wiki" \
-            --email "maximeduvalsy@gmail.com" \
-            --token ""
-    """
-    logging.debug("Ingesting confluence space into vector database...")
-    page_ids = get_page_ids_from_space(space, wiki_url, email, token)
-    logging.debug("Got page ids.")
-    confluence_pages = get_confluence_pages(wiki_url, email, token, space, page_ids)
-    logging.debug("Extracted documents.")
-
-    text_splitter = get_text_splitter()
-    confluence_chunks = text_splitter.split_documents(confluence_pages)
-    logging.debug("Split documents.")
-
-    Milvus.from_documents(
-        confluence_chunks,
-        ml_models["embedder"],
-        connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=get_collection_name_from_space_key(space),
-        drop_old=True,
-    )
-    logging.debug("Embedded documents.")
+    return get_confluence_pages(domain, email, token)
