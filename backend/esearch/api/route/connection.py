@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from esearch.api.authorization import TokenData, get_current_user
+from esearch.api.lifespan import ml_models
 from esearch.core.connection import (
     ConnectionEntity,
     create_connection,
@@ -46,7 +47,7 @@ def add_routes(app: FastAPI) -> None:
                 user_id=token_data.user_id,
             ),
         )
-        background_tasks.add_task(index_connection, connection)
+        background_tasks.add_task(index_connection, connection, ml_models["embedder"])
 
     @app.get("/api/connections")
     async def connections(

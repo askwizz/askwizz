@@ -13,12 +13,22 @@ type JsonResponse = {
   answer: string;
   references: {
     metadata: {
-      id: string;
-      source: string;
+      page_id: string;
+      page_path: string;
+      relative_path: string;
       title: string;
     };
     page_content: string;
   }[];
+};
+
+const getLinkFromMetadata = (
+  metadata: JsonResponse["references"][0]["metadata"],
+) => {
+  const { page_path, relative_path } = metadata;
+  return `https://bpc-ai.atlassian.net/wiki${page_path}${
+    relative_path ? "#" : ""
+  }${relative_path}`;
 };
 
 export default function Search() {
@@ -41,7 +51,7 @@ export default function Search() {
   const handleClickOnSearch = () => {
     const data = {
       query: search,
-      connection_name: "newconnection",
+      connection_name: "From_CLI",
       generate_answer: false,
     };
 
@@ -93,7 +103,7 @@ export default function Search() {
               <div>
                 <Button>
                   <Link
-                    href={result.metadata.source}
+                    href={getLinkFromMetadata(result.metadata)}
                     rel="noopener"
                     target="_blank"
                   >
