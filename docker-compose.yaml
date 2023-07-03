@@ -44,9 +44,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=esearch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: esearch
     ports:
       - "5432:5432"
     volumes:
@@ -56,11 +56,11 @@ services:
     build: ./backend
     container_name: api
     environment:
-      - API_OAUTH_ATLASSIAN__CLIENT_ID=""
-      - API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
-      - API_RWKV_MODEL_PATH=./tmp/rwkv-model
-      - API_EMBEDDER_MODEL_NAME=e5
-      - API_SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://postgres:password@db:5432/esearch
+      API_OAUTH_ATLASSIAN__CLIENT_ID: ""
+      API_OAUTH_ATLASSIAN__CLIENT_SECRET: ""
+      API_RWKV_MODEL_PATH: ./tmp/rwkv-model
+      API_EMBEDDER_MODEL_NAME: e5
+      API_SQLALCHEMY_DATABASE_URL: postgresql+psycopg2://postgres:password@db:5432/esearch
     volumes:
       - ./backend/tmp/rwkv-model.pth:/app/tmp/rwkv-model.pth
       - ./backend/tmp:/root/.cache/huggingface/hub
@@ -71,6 +71,8 @@ services:
 
   ui:
     build: ./ui
+    environment:
+      API_BASE_URL: http://api:8000
     ports:
       - "3000:3000"
     depends_on:
