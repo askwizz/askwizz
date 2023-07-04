@@ -4,7 +4,8 @@ from fastapi import Depends, FastAPI
 from langchain.docstore.document import Document
 from pydantic import BaseModel
 
-from esearch.api.authorization import TokenData, get_current_user
+from esearch.api.authorization import UserData, get_current_user
+from esearch.api.exceptions import NotAuthenticatedException
 from esearch.api.lifespan import ml_models
 from esearch.core.search import SearchRequest, search
 
@@ -26,7 +27,11 @@ def add_routes(app: FastAPI) -> None:
     @app.post("/api/search")
     async def search_route(
         search_request: SearchRequest,
-        token_data: Annotated[TokenData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user)],
     ) -> SearchResponse:
-        relevant_documents, answer = search(search_request, llm=ml_models["llm"])
+        if user_data.user_id is None:
+            raise NotAuthenticatedException()
+        relevant_documents, answer = search(
+            search_request, llm=ml_models["llm"], user_id=user_data.user_id
+        )
         return SearchResponse(answer=answer, references=relevant_documents)

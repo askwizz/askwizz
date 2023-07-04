@@ -1,8 +1,9 @@
 import itertools
 import json
-from typing import Iterable, List
+from typing import Any, Iterable, List
 from urllib.parse import quote
 
+from atlassian import Confluence
 from bs4 import BeautifulSoup, Tag
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -86,12 +87,46 @@ def create_documents_from_page(page: Document) -> List[Document]:
     )
 
 
-def create_documents_from_pages(pages: list) -> List[Document]:
+def create_passages_from_pages(pages: list) -> List[Document]:
     return list(
         itertools.chain.from_iterable(
             [create_documents_from_page(page) for page in pages]
         )
     )
+
+
+def get_confluence_pages(
+    atlassian_domain: str, email: str, token: str
+) -> list[Document]:
+    confluence = Confluence(
+        url=f"https://{atlassian_domain}", username=email, password=token, cloud=True
+    )
+    spaces = confluence.get_all_spaces(start=0, limit=500, expand=None)
+    if not spaces:
+        return []
+    space_results: List[Any] = spaces["results"]  # type: ignore
+    pages = []
+    for space in space_results:
+        space_pages = confluence.get_all_pages_from_space(
+            space["key"],
+            start=0,
+            limit=100,
+            status=None,
+            expand="body.storage,version",
+            content_type="page",
+        )
+        pages.extend(space_pages)
+    return [
+        Document(
+            page_content=page["body"]["storage"]["value"],
+            metadata={
+                "title": page["title"],
+                "id": page["id"],
+                "path": page["_links"]["webui"],
+            },
+        )
+        for page in pages
+    ]
 
 
 if __name__ == "__main__":
@@ -108,5 +143,5 @@ if __name__ == "__main__":
         )
         for page in pages
     ]
-    documents = create_documents_from_pages(pages)
+    documents = create_passages_from_pages(pages)
     print(documents)

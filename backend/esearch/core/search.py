@@ -7,7 +7,9 @@ from langchain.vectorstores.base import VectorStore
 from pydantic import BaseModel
 
 from esearch.api.lifespan import ml_models
-from esearch.core.index_confluence import get_collection_name_from_connection
+from esearch.core.connection.index import (
+    get_collection_name,
+)
 from esearch.core.models.rwkv import LLMModel
 
 token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenizer.json")
@@ -15,7 +17,6 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 
 class SearchRequest(BaseModel):
     query: str
-    connection_name: str
     generate_answer: bool = False
 
 
@@ -54,11 +55,13 @@ def get_answer_and_documents(
     return relevant_documents, answer
 
 
-def search(payload: SearchRequest, llm: LLMModel) -> tuple[list[Document], str]:
+def search(
+    payload: SearchRequest, llm: LLMModel, user_id: str
+) -> tuple[list[Document], str]:
     vector_db = Milvus(
         embedding_function=ml_models["embedder"],
         connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=get_collection_name_from_connection(payload.connection_name),
+        collection_name=get_collection_name(user_id),
     )
 
     return get_answer_and_documents(payload, vector_db, llm)

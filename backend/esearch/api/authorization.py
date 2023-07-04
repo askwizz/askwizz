@@ -21,11 +21,11 @@ DQIDAQAB
 """
 
 
-class TokenData(BaseModel):
+class UserData(BaseModel):
     user_id: str | None = None
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserData:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -36,7 +36,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Tok
         user_id: str = payload.get("sub")  # type: ignore
         if user_id is None:
             raise credentials_exception  # noqa: TRY301
-        token_data = TokenData(user_id=user_id)
+        token_data = UserData(user_id=user_id)
     except JWTError as e:
         logging.exception(e)
         raise credentials_exception

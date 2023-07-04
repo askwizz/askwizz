@@ -44,6 +44,7 @@ poethepoet = "^0.20.0"
 ruff = "^0.0.275"
 notebook = "^6.5.4"
 matplotlib = "^3.7.1"
+mypy = "^1.4.1"
 
 
 [[tool.poetry.source]]

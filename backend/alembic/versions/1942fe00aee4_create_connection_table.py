@@ -21,13 +21,15 @@ def upgrade() -> None:
     op.create_table(
         "connection",
         sa.Column("id", sa.String(50), primary_key=True),
+        sa.Column("configuration", sa.JSON, nullable=False),
         sa.Column("name", sa.String(100), nullable=False),
-        sa.Column("user_id", sa.String(200), nullable=False),
-        sa.Column("atlassian_token", sa.String(200), nullable=False),
-        sa.Column("atlassian_email", sa.String(200), nullable=False),
-        sa.Column("domain", sa.String(400), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("status", sa.String(50), nullable=False),
+        sa.Column("source", sa.String(50), nullable=False),
+        sa.Column("user_id", sa.String(200), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("indexed_at", sa.DateTime(), nullable=False),
+        sa.Column("documents_count", sa.Integer, nullable=False, default=0),
+        sa.Column("passages_count", sa.Integer, nullable=False, default=0),
     )
 
 

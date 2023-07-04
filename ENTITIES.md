@@ -39,9 +39,13 @@ type: json
 meaning: type of the document
 type: char
 
+**connection_id**
+meaning: id of the postgres connection
+type: char
+
 # Search
 
-**query -> vector -> passages -> return links to passages -> (do not do it: fetch text content) -> provide to llm -> return generated answer**
+**query -> vector -> passages -> return links to passages -> (do not do it: fetch text content) -> (provide to llm) -> return generated answer**
 OR
 query -> vector -> passages -> return text passage -> provide to llm -> return generated answer
 
