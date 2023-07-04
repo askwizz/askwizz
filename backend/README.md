@@ -58,3 +58,31 @@ poetry run uvicorn esearch.api.app:create_app --reload
 
 Server starts at http://127.0.0.1:8000.
 
+## Entity Architecture
+
+**connection**
+
+- a user_id (clerk id)
+- connection_type: str
+- connection_data: json. Object with info for establishing the connection
+- name
+- status: "indexing" | ""
+
+**query**
+
+- user_id
+- text: str (="What is a toto ?" | "What is toto?created_at<=2021.01.01&connection=xueyfgezigu") (or json field with semi striuctured query search)
+- created_at
+
+```mermaid
+erDiagram
+
+
+
+
+
+```
+
+Tracking user actions
+
+https://amplitude.com/pricing
