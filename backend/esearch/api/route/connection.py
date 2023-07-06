@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated, List
 
 from fastapi import BackgroundTasks, Depends, FastAPI
@@ -10,12 +11,13 @@ from esearch.api.settings import AppSettings
 from esearch.core.connection.definition import Connection
 from esearch.core.connection.entity import (
     NewConnectionPayload,
-    create_connection,
+    create_or_update_connection,
     delete_connection,
 )
 from esearch.core.connection.index import index_connection
 from esearch.db.engine import get_db
 from esearch.db.models.connection import fetch_connections_of_user
+from esearch.services.milvus.client import Milvus, milvus_dependency
 
 
 def add_routes(app: FastAPI, settings: AppSettings) -> None:
@@ -24,21 +26,25 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         connection_data: NewConnectionPayload,
         user: Annotated[UserData, Depends(get_current_user)],
         background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db(settings.sqlalchemy_database_url)),  # noqa: B008
+        db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
+        milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> None:
+        logging.info("New connection request")
         if user.user_id is None:
             raise NotAuthenticatedException()
         if db is None:
             raise DBNotInitializedException()
-        connection = create_connection(db, connection_data, user.user_id)
+        logging.info("Creating connection")
+        connection = create_or_update_connection(db, connection_data, user.user_id)
+        logging.info(f"Created connection {connection.id_}")
         background_tasks.add_task(
-            index_connection, connection, ml_models["embedder"], db
+            index_connection, connection, ml_models["embedder"], db, milvus_client
         )
 
     @app.get("/api/connections")
     async def connections(
         token_data: Annotated[UserData, Depends(get_current_user)],
-        db: Session = Depends(get_db(settings.sqlalchemy_database_url)),  # noqa: B008
+        db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
     ) -> List[Connection]:
         if token_data.user_id is None:
             raise NotAuthenticatedException()
@@ -51,11 +57,12 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
     async def delete_connections(
         connection_id: str,
         token_data: Annotated[UserData, Depends(get_current_user)],
-        db: Session = Depends(get_db(settings.sqlalchemy_database_url)),  # noqa: B008
+        db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
+        milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> None:
         if token_data.user_id is None:
             raise NotAuthenticatedException()
         if db is None:
             raise DBNotInitializedException()
 
-        delete_connection(db, token_data.user_id, connection_id)
+        delete_connection(db, token_data.user_id, connection_id, milvus_client)

@@ -4,6 +4,8 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 
 
 class CustomHuggingFaceEmbeddings(HuggingFaceEmbeddings):
+    embedding_size: int = 768
+
     def __init__(
         self: "CustomHuggingFaceEmbeddings", **kwargs: Any  # noqa: ANN401
     ) -> None:

@@ -1,7 +1,6 @@
 import logging
 
 import dotenv
-import uvicorn.logging
 from fastapi import FastAPI
 
 import esearch.api.route.auth
@@ -20,14 +19,13 @@ def create_app_with_settings(app_settings: AppSettings) -> FastAPI:
     esearch.api.route.search.add_routes(app=app)
     esearch.api.route.connection.add_routes(app=app, settings=app_settings)
     esearch.api.route.version.add_routes(app=app)
+    logging.warning("Configured routes")
 
     return app
 
 
 def create_app() -> FastAPI:
-    logging_handler = logging.StreamHandler()
-    logging_handler.setFormatter(uvicorn.logging.DefaultFormatter())
-    logging.getLogger().addHandler(logging_handler)
+    logging.basicConfig(level=logging.INFO)
     dotenv.load_dotenv()
     app_settings = AppSettings()
 

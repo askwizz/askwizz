@@ -1,9 +1,9 @@
 import datetime
 import logging
-from typing import Callable, Dict
+import time
+from datetime import timezone
+from typing import Callable, Dict, Generator, List, Tuple
 
-from langchain.embeddings.base import Embeddings
-from langchain.vectorstores import Milvus
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -13,11 +13,13 @@ from esearch.core.connection.definition import (
     ConnectionSource,
     ConnectionStatus,
 )
+from esearch.core.models.embeddings.e5 import CustomEmbeddings
 from esearch.core.parsing.confluence import (
-    create_passages_from_pages,
-    get_confluence_pages,
+    get_confluence_passages_generator,
 )
+from esearch.core.passage.definition import Passage
 from esearch.db.models.connection import update_connection_in_db
+from esearch.services.milvus.client import Milvus
 
 
 def get_collection_name(user_id: str) -> str:
@@ -29,41 +31,66 @@ class IndexingResult(BaseModel):
     documents: int
 
 
-def index_confluence_connection(
-    connection: Connection, embedder: Embeddings
-) -> IndexingResult:
+def get_confluence_passages(
+    connection: Connection,
+) -> Generator[Tuple[List[Passage], int], None, None]:
     collection_name = get_collection_name(connection.user_id)
-    logging.debug("Collection name", collection_name)
+    logging.info(f"Collection name {collection_name}")
 
     atlassian_configuration: AtlassianData = connection.configuration.atlassian  # type: ignore  # noqa: E501
-    pages = get_confluence_pages(
+    return get_confluence_passages_generator(
+        connection.user_id,
         atlassian_configuration.atlassian_domain,
         atlassian_configuration.atlassian_email,
         atlassian_configuration.atlassian_token,
     )
-    passages = create_passages_from_pages(pages)
-    Milvus.from_documents(
-        passages,
-        embedder,
-        connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=collection_name,
-        drop_old=True,
-    )
-    return IndexingResult(passages=len(passages), documents=len(pages))
 
 
-source_to_indexer: Dict[
-    ConnectionSource, Callable[[Connection, Embeddings], IndexingResult]
+def index_passages(
+    passages_generator: Generator[Tuple[List[Passage], int], None, None],
+    connection: Connection,
+    embedder: CustomEmbeddings,
+    milvus_client: Milvus,
+) -> IndexingResult:
+    passage_count = 0
+    page_count = 0
+    for passages, page_count in passages_generator:  # noqa: B007
+        logging.info(f"Indexing {len(passages)} passages")
+        milvus_client.index_passages(
+            embedder=embedder,
+            passages=passages,
+            connection_key=connection.connection_key,
+        )
+        passage_count += len(passages)
+    return IndexingResult(passages=passage_count, documents=page_count)
+
+
+source_to_passages: Dict[
+    ConnectionSource,
+    Callable[[Connection], Generator[Tuple[List[Passage], int], None, None]],
 ] = {
-    ConnectionSource.CONFLUENCE: index_confluence_connection,
+    ConnectionSource.CONFLUENCE: get_confluence_passages,
 }
 
 
-def index_connection(connection: Connection, embedder: Embeddings, db: Session) -> None:
-    result = source_to_indexer[connection.source](connection, embedder)
-    connection.documents_count = result.documents
-    connection.passages_count = result.passages
-    connection.indexed_at = datetime.datetime.now()
+def index_connection(
+    connection: Connection,
+    embedder: CustomEmbeddings,
+    db: Session,
+    milvus_client: Milvus,
+) -> None:
+    logging.info(f"Starting indexing connection {connection.id_}")
+    t1 = time.time()
+    passage_generator = source_to_passages[connection.source](connection)
+    indexing_result = index_passages(
+        passage_generator, connection, embedder, milvus_client
+    )
+    logging.info(
+        f"Finished indexing connection {connection.id_} in {time.time() - t1:.2f}s"
+    )
+    connection.documents_count = indexing_result.documents
+    connection.passages_count = indexing_result.passages
+    connection.indexed_at = datetime.datetime.now(timezone.utc)
     connection.status = ConnectionStatus.ACTIVE
 
     update_connection_in_db(db, connection)

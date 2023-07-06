@@ -30,6 +30,7 @@ class ConnectionRow(Base):
     user_id = Column(String(200), nullable=False)
     documents_count = Column(Integer, nullable=False)
     passages_count = Column(Integer, nullable=False)
+    connection_key = Column(String(256), nullable=False)
 
 
 def convert_from_db_row_to_entity(row: ConnectionRow) -> Connection:
@@ -44,6 +45,7 @@ def convert_from_db_row_to_entity(row: ConnectionRow) -> Connection:
         user_id=row.user_id,  # type: ignore
         documents_count=row.documents_count,  # type: ignore
         passages_count=row.passages_count,  # type: ignore
+        connection_key=row.connection_key,  # type: ignore
     )
 
 
@@ -59,6 +61,7 @@ def get_serializable_connection(connection: Connection) -> dict:
         "user_id": connection.user_id,
         "documents_count": connection.documents_count,
         "passages_count": connection.passages_count,
+        "connection_key": connection.connection_key,
     }
 
 

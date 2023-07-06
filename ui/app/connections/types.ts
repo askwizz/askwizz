@@ -6,7 +6,7 @@ export type Connection = {
   created_at: string;
   indexed_at: string;
   domain: string;
-  id: string;
+  id_: string;
   name: string;
   status: ConnectionStatus;
   source: Source;

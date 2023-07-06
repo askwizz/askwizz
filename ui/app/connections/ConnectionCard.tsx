@@ -45,7 +45,7 @@ export default function ConnectionCard({
   };
 
   const handleClickOnRemove = () => {
-    deleteConnection(connection.id).finally(() => {
+    deleteConnection(connection.id_).finally(() => {
       fetchConnections();
     });
   };

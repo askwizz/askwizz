@@ -30,6 +30,7 @@ def upgrade() -> None:
         sa.Column("indexed_at", sa.DateTime(), nullable=False),
         sa.Column("documents_count", sa.Integer, nullable=False, default=0),
         sa.Column("passages_count", sa.Integer, nullable=False, default=0),
+        sa.Column("connection_key", sa.String(256), nullable=False, default=0),
     )
 
 

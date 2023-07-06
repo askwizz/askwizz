@@ -23,12 +23,20 @@ type: date
 meaning: date of the creation of the document
 type: date
 
+**last_update**
+meaning: date of the last update of the document
+type: date
+
 **creator**
-meaning: author
+meaning: author of the document
 type: varchar
 
 **link**
 meaning: link to the passage. As close as possible to the document. For a pdf -> can't.
+type: varchar
+
+**document_link**
+meaning: link to the document
 type: varchar
 
 **reference**
@@ -42,6 +50,16 @@ type: char
 **connection_id**
 meaning: id of the postgres connection
 type: char
+
+**indexor**
+meaning: person who indexed the document
+type: char
+
+Each user has a collection.
+Each source a user sets creates a partition
+If the source has already been set, drop the partition.
+How to know if the source has already been set ? From the passages of the source, compute a hash. Use it in the name of the partition.
+Name of the partition = source-hash.
 
 # Search
 

@@ -35,3 +35,4 @@ class Connection(BaseModel):
     user_id: str
     documents_count: int = 0
     passages_count: int = 0
+    connection_key: str = ""

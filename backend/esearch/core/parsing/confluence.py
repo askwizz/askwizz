@@ -1,6 +1,8 @@
-import itertools
+import copy
+import datetime
 import json
-from typing import Any, Iterable, List
+from datetime import timezone
+from typing import Any, Generator, Iterable, List, Tuple
 from urllib.parse import quote
 
 from atlassian import Confluence
@@ -8,6 +10,15 @@ from bs4 import BeautifulSoup, Tag
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic import BaseModel
+
+from esearch.core.parsing.helpers import get_generator_packer, unpack_generator
+from esearch.core.passage.definition import (
+    ConfluenceDocumentReference,
+    DocumentReference,
+    DocumentType,
+    Passage,
+    PassageMetadata,
+)
 
 TEXT_SPLITTERS = [
     RecursiveCharacterTextSplitter(
@@ -22,6 +33,7 @@ TEXT_SPLITTERS = [
 class ConfluenceChunk(BaseModel):
     text: str
     relative_path: str | None
+    header: str
 
 
 def is_element_header(el: Tag) -> bool:
@@ -53,6 +65,7 @@ def create_chunks_from_element(elements: Iterable[Tag]) -> List[ConfluenceChunk]
             ConfluenceChunk(
                 text=element.get_text(),
                 relative_path=format_header_text(current_header),
+                header=current_header or "",
             )
         )
     return chunks
@@ -66,67 +79,157 @@ def create_chunks_from_html(html: BeautifulSoup) -> List[ConfluenceChunk]:
     return create_chunks_from_element(page_elements)
 
 
-def create_documents_from_page(page: Document) -> List[Document]:
-    title = page.metadata["title"]
-    page_id = page.metadata["id"]
-    page_path = page.metadata["path"]
-    base_metadata = {"page_id": page_id, "page_path": page_path, "title": title}
-    html = parse_confluence_html(page.page_content)
+def get_confluence_passage_title(doc: Document, page: dict) -> str:
+    page_title = page["title"]
+    header = doc.metadata["header"]
+    return f"Page: {page_title} | Section: {header} | "
+
+
+def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
     chunks = create_chunks_from_html(html)
-    chunk_documents = [
+    documents_from_raw_chunks = [
         Document(
             page_content=chunk.text,
-            metadata={**base_metadata, "relative_path": chunk.relative_path},
+            metadata={"path": chunk.relative_path, "header": chunk.header},
         )
         for chunk in chunks
     ]
-    return list(
-        itertools.chain.from_iterable(
-            [splitters.split_documents(chunk_documents) for splitters in TEXT_SPLITTERS]
+    documents_with_reference: List[Document] = []
+    for doc in documents_from_raw_chunks:
+        for splitter in TEXT_SPLITTERS:
+            for chunk in splitter.split_text(doc.page_content):
+                start_index = doc.page_content.find(chunk)
+                documents_with_reference.append(
+                    Document(
+                        page_content=chunk,
+                        metadata={
+                            **copy.deepcopy(doc.metadata),
+                            "start_index": start_index,
+                            "end_index": start_index + len(chunk),
+                        },
+                    )
+                )
+    return documents_with_reference
+
+
+def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
+    atlassian_domain = metadata["atlassian_domain"]
+    atlassian_email = metadata["atlassian_email"]
+    user_id = metadata["user_id"]
+
+    indexed_at = str(datetime.datetime.now(timezone.utc))
+
+    page_path = page["_links"]["webui"]
+    page_link = f"https://{atlassian_domain}/wiki{page_path}"
+    page_creation_date = page["history"]["createdDate"]
+
+    html = parse_confluence_html(page["body"]["storage"]["value"])
+    documents_with_reference = get_documents_from_html(html)
+
+    return [
+        Passage(
+            text=doc.page_content,
+            metadata=PassageMetadata(
+                title=get_confluence_passage_title(doc, page),
+                indexed_at=str(indexed_at),
+                created_at=page_creation_date,
+                last_update=page["version"]["when"],
+                creator=page["history"]["createdBy"]["displayName"],
+                link=f"{page_link}#{doc.metadata['path']}",
+                document_link=page_link,
+                reference=DocumentReference(
+                    confluence=ConfluenceDocumentReference(
+                        domain=atlassian_domain,
+                        page_path=page_path,
+                        chunk_id=doc.metadata["path"],
+                        start_index=doc.metadata["start_index"],
+                        end_index=doc.metadata["end_index"],
+                        space_key=page["space"],
+                    )
+                ),
+                filetype=DocumentType.CONFLUENCE,
+                connection_id=user_id,
+                indexor=atlassian_email,
+            ),
+        )
+        for doc in documents_with_reference
+    ]
+
+
+def create_passages_from_pages(
+    pages_generator: Generator[Tuple[List[dict], int], None, None], metadata: dict
+) -> Generator[Tuple[Passage, int], None, None]:
+    return unpack_generator(
+        (
+            (create_passages_from_page(page, metadata), page_count)
+            for pages, page_count in pages_generator
+            for page in pages
         )
     )
 
 
-def create_passages_from_pages(pages: list) -> List[Document]:
-    return list(
-        itertools.chain.from_iterable(
-            [create_documents_from_page(page) for page in pages]
-        )
+def confluence_pages_from_space(
+    confluence: Confluence,
+    space_key: str,
+    start: int,
+    limit: int,
+    **kwargs: Any,  # noqa: ANN401
+) -> List[dict]:
+    space_pages = confluence.get_all_pages_from_space(
+        space_key, start=start, limit=limit, **kwargs
     )
+    return [{"space": space_key, **page} for page in space_pages]
 
 
-def get_confluence_pages(
+def confluence_pages_generator(
     atlassian_domain: str, email: str, token: str
-) -> list[Document]:
+) -> Generator[Tuple[List[dict], int], None, None]:
     confluence = Confluence(
         url=f"https://{atlassian_domain}", username=email, password=token, cloud=True
     )
     spaces = confluence.get_all_spaces(start=0, limit=500, expand=None)
     if not spaces:
-        return []
+        yield [], 0
     space_results: List[Any] = spaces["results"]  # type: ignore
-    pages = []
+    constant_query_params = {
+        "status": None,
+        "expand": "body.storage,version,history",
+        "content_type": "page",
+    }
+    pages_count = 0
     for space in space_results:
-        space_pages = confluence.get_all_pages_from_space(
-            space["key"],
-            start=0,
-            limit=100,
-            status=None,
-            expand="body.storage,version",
-            content_type="page",
+        start = 0
+        limit = 100
+        space_pages = confluence_pages_from_space(
+            confluence, space["key"], start=0, limit=limit, **constant_query_params
         )
-        pages.extend(space_pages)
-    return [
-        Document(
-            page_content=page["body"]["storage"]["value"],
-            metadata={
-                "title": page["title"],
-                "id": page["id"],
-                "path": page["_links"]["webui"],
-            },
-        )
-        for page in pages
-    ]
+        pages_count += len(space_pages)
+        yield space_pages, pages_count
+        while len(space_pages) > 0:
+            start += limit
+            space_pages = confluence_pages_from_space(
+                confluence,
+                space["key"],
+                start=start,
+                limit=limit,
+                **constant_query_params,
+            )
+            pages_count += len(space_pages)
+            yield space_pages, pages_count
+
+
+def get_confluence_passages_generator(
+    user_id: str, atlassian_domain: str, email: str, token: str
+) -> Generator[Tuple[List[Passage], int], None, None]:
+    pages_generator = confluence_pages_generator(atlassian_domain, email, token)
+    metadata = {
+        "atlassian_domain": atlassian_domain,
+        "atlassian_email": email,
+        "atlassian_token": token,
+        "user_id": user_id,
+    }
+    generator_packer = get_generator_packer(1024)
+    return generator_packer(create_passages_from_pages(pages_generator, metadata))
 
 
 if __name__ == "__main__":
@@ -143,5 +246,12 @@ if __name__ == "__main__":
         )
         for page in pages
     ]
-    documents = create_passages_from_pages(pages)
+    documents = create_passages_from_pages(
+        pages,
+        {
+            "atlassian_domain": "bpc-ai.atlassian.net",
+            "atlassian_email": "maximeduvalsy@gmail.com",
+            "user_id": "xxxxxxxx__toto",
+        },
+    )
     print(documents)

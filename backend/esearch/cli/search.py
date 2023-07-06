@@ -15,11 +15,6 @@ from esearch.core.search import SearchRequest, get_answer_and_documents
     required=True,
 )
 @click.option(
-    "--connection_name",
-    type=str,
-    required=True,
-)
-@click.option(
     "--generate_answer",
     type=bool,
     required=True,
@@ -32,13 +27,11 @@ from esearch.core.search import SearchRequest, get_answer_and_documents
 )
 @click.option(
     "--collection_id",
-    "--collection_id",
     type=str,
     required=True,
 )
 def search_command(
     query: str,
-    connection_name: str,
     generate_answer: bool,
     rwkv_model_path: str,
     collection_id: str,
@@ -46,9 +39,9 @@ def search_command(
     """Ingest confluence space into a database.
     poetry run python -m esearch.cli search \
             --query "What is a bad bank ?" \
-            --connection_name "From_CLI" \
             --generate_answer "False" \
-            --rwkv_model_path "./tmp/rwkv-model.pth"
+            --rwkv_model_path "./tmp/rwkv-model.pth" \
+            --collection_id "user_2Qklbs5sgdrrPJhZ8g1KtlfRmkH"
     """
     embedder = E5Basev2()
     vector_db = Milvus(
@@ -59,7 +52,6 @@ def search_command(
     llm = LLMModel.from_path(rwkv_model_path)
     payload = SearchRequest(
         query=query,
-        connection_name=connection_name,
         generate_answer=generate_answer,
     )
     relevant_documents, answer = get_answer_and_documents(payload, vector_db, llm)

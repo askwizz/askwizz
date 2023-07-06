@@ -9,26 +9,33 @@ import { Input } from "@/components/ui/input";
 
 import { Separator } from "./ui/separator";
 
+const DOCUMENT_TYPES = ["CONFLUENCE"];
+type DocumentType = (typeof DOCUMENT_TYPES)[number];
+
 type JsonResponse = {
   answer: string;
   references: {
     metadata: {
-      page_id: string;
-      page_path: string;
-      relative_path: string;
       title: string;
+      indexed_at: string;
+      created_at: string;
+      last_update: string;
+      creator: string;
+      link: string;
+      document_link: string;
+      reference: {
+        confluence?: {
+          domain: string;
+          page_path: string;
+        };
+      };
+      filetype: DocumentType;
+      connection_id: string;
+      indexor: string;
     };
-    page_content: string;
+    score: number;
+    passage_id: number;
   }[];
-};
-
-const getLinkFromMetadata = (
-  metadata: JsonResponse["references"][0]["metadata"],
-) => {
-  const { page_path, relative_path } = metadata;
-  return `https://bpc-ai.atlassian.net/wiki${page_path}${
-    relative_path ? "#" : ""
-  }${relative_path}`;
 };
 
 export default function Search() {
@@ -94,7 +101,7 @@ export default function Search() {
       <div className="mt-8 flex h-32 w-full flex-col">
         {loading && <span>Loading...</span>}
         {response?.references?.map((result) => (
-          <div key={result.page_content} className="flex flex-col">
+          <div key={result.passage_id} className="flex flex-col">
             <Separator className="my-2" />
             <div className="my-2 flex flex-row items-center space-x-2">
               <span className="font-bold">
@@ -103,7 +110,7 @@ export default function Search() {
               <div>
                 <Button>
                   <Link
-                    href={getLinkFromMetadata(result.metadata)}
+                    href={result.metadata.link}
                     rel="noopener"
                     target="_blank"
                   >
@@ -112,7 +119,7 @@ export default function Search() {
                 </Button>
               </div>
             </div>
-            <span>{result.page_content}</span>
+            <span>{result.metadata.title}</span>
           </div>
         ))}
       </div>
