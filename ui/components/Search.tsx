@@ -1,38 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import PassageLink from "./PassageLink";
 import { Separator } from "./ui/separator";
 
 const DOCUMENT_TYPES = ["CONFLUENCE"];
 type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
+export type PassageMetadata = {
+  title: string;
+  indexed_at: string;
+  created_at: string;
+  last_update: string;
+  creator: string;
+  link: string;
+  document_link: string;
+  reference: {
+    confluence?: {
+      domain: string;
+      page_path: string;
+    };
+  };
+  filetype: DocumentType;
+  connection_id: string;
+  indexor: string;
+};
 type JsonResponse = {
   answer: string;
   references: {
-    metadata: {
-      title: string;
-      indexed_at: string;
-      created_at: string;
-      last_update: string;
-      creator: string;
-      link: string;
-      document_link: string;
-      reference: {
-        confluence?: {
-          domain: string;
-          page_path: string;
-        };
-      };
-      filetype: DocumentType;
-      connection_id: string;
-      indexor: string;
-    };
+    metadata: PassageMetadata;
     score: number;
     passage_id: number;
   }[];
@@ -108,18 +109,9 @@ export default function Search() {
                 Page title: {result.metadata.title}
               </span>
               <div>
-                <Button>
-                  <Link
-                    href={result.metadata.link}
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    link
-                  </Link>
-                </Button>
+                <PassageLink passage={result.metadata} />
               </div>
             </div>
-            <span>{result.metadata.title}</span>
           </div>
         ))}
       </div>
