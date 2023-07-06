@@ -53,7 +53,7 @@ poetry run python -m esearch.cli ingest_connection --domain bpc-ai.atlassian.net
 Start server
 
 ```console
-poetry run uvicorn esearch.api.app:create_app --reload
+poetry run uvicorn esearch.api.app:create_app --reload --log-level debug
 ```
 
 Server starts at http://127.0.0.1:8000.

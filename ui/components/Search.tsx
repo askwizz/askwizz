@@ -1,34 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import PassageLink from "./PassageLink";
 import { Separator } from "./ui/separator";
 
+const DOCUMENT_TYPES = ["CONFLUENCE"];
+type DocumentType = (typeof DOCUMENT_TYPES)[number];
+
+export type PassageMetadata = {
+  title: string;
+  indexed_at: string;
+  created_at: string;
+  last_update: string;
+  creator: string;
+  link: string;
+  document_link: string;
+  reference: {
+    confluence?: {
+      domain: string;
+      page_path: string;
+    };
+  };
+  filetype: DocumentType;
+  connection_id: string;
+  indexor: string;
+};
 type JsonResponse = {
   answer: string;
   references: {
-    metadata: {
-      page_id: string;
-      page_path: string;
-      relative_path: string;
-      title: string;
-    };
-    page_content: string;
+    metadata: PassageMetadata;
+    score: number;
+    passage_id: number;
   }[];
-};
-
-const getLinkFromMetadata = (
-  metadata: JsonResponse["references"][0]["metadata"],
-) => {
-  const { page_path, relative_path } = metadata;
-  return `https://bpc-ai.atlassian.net/wiki${page_path}${
-    relative_path ? "#" : ""
-  }${relative_path}`;
 };
 
 export default function Search() {
@@ -94,25 +102,16 @@ export default function Search() {
       <div className="mt-8 flex h-32 w-full flex-col">
         {loading && <span>Loading...</span>}
         {response?.references?.map((result) => (
-          <div key={result.page_content} className="flex flex-col">
+          <div key={result.passage_id} className="flex flex-col">
             <Separator className="my-2" />
             <div className="my-2 flex flex-row items-center space-x-2">
               <span className="font-bold">
                 Page title: {result.metadata.title}
               </span>
               <div>
-                <Button>
-                  <Link
-                    href={getLinkFromMetadata(result.metadata)}
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    link
-                  </Link>
-                </Button>
+                <PassageLink passage={result.metadata} />
               </div>
             </div>
-            <span>{result.page_content}</span>
           </div>
         ))}
       </div>

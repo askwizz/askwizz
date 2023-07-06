@@ -1,6 +1,6 @@
 import React from "react";
 
-import AtlassianForm from "./AtlassianForm";
+import AtlassianForm from "./ConnectionForm";
 
 export default function Page() {
   return (

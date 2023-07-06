@@ -14,10 +14,15 @@ def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
 
-class E5Basev2(BaseModel, Embeddings):
+class CustomEmbeddings(Embeddings):
+    embedding_size: int
+
+
+class E5Basev2(BaseModel, CustomEmbeddings):
     tokenizer: Any = None  #: :meta private:
     model: Any = None  #: :meta private:
     batch_size: int = 32
+    embedding_size: int = 768
 
     def __init__(self: "E5Basev2", **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(**kwargs)
@@ -43,7 +48,7 @@ class E5Basev2(BaseModel, Embeddings):
         return embeddings.detach().numpy().tolist()
 
     def embed_documents(self: "E5Basev2", texts: List[str]) -> List[List[float]]:
-        logging.info(f"Embedding {len(texts)} documents with E5Basev2...")
+        logging.info(f"Embedding {len(texts)} passages with E5Basev2...")
         all_embeddings = []
         for i in tqdm(range(0, len(texts), self.batch_size)):
             embeddings = self._embed_texts(texts[i : i + self.batch_size], "passage: ")

@@ -1,12 +1,15 @@
 import os
-from typing import Generator
+from typing import Callable, Generator
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import String, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.session import Session
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    type_annotation_map = {
+        str: String().with_variant(String(255), "mysql", "mariadb"),
+    }
 
 
 def get_database_url_from_env() -> str:
@@ -17,14 +20,15 @@ def get_database_url_from_env() -> str:
     return database_url
 
 
-def get_db() -> Generator[Session, None, None]:
-    # FIXME pass db url as argument
-    database_url = get_database_url_from_env()
-    engine = create_engine(database_url)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def get_db(database_url: str) -> Callable[[], Generator[Session, None, None]]:
+    def get_db_generator() -> Generator[Session, None, None]:
+        engine = create_engine(database_url)
+        session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+        db = session_local()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    return get_db_generator

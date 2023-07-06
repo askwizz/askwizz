@@ -2,20 +2,18 @@ import logging
 import os
 
 from langchain.docstore.document import Document
-from langchain.vectorstores import Milvus
-from langchain.vectorstores.base import VectorStore
 from pydantic import BaseModel
 
 from esearch.api.lifespan import ml_models
-from esearch.core.index_confluence import get_collection_name_from_connection
-from esearch.core.models.rwkv import LLMModel
+from esearch.core.models.embeddings.e5 import CustomEmbeddings
+from esearch.services.milvus.client import Milvus
+from esearch.services.milvus.entity import RetrievedPassage
 
 token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenizer.json")
 
 
 class SearchRequest(BaseModel):
     query: str
-    connection_name: str
     generate_answer: bool = False
 
 
@@ -41,24 +39,19 @@ Detailed expert answer:
 
 
 def get_answer_and_documents(
-    payload: SearchRequest, vector_db: VectorStore, llm: LLMModel
-) -> tuple[list[Document], str]:
+    payload: SearchRequest,
+    milvus_client: Milvus,
+    embedder: CustomEmbeddings,
+) -> tuple[list[RetrievedPassage], str]:
     logging.info(f"Providing answer to question {payload.query}")
     question = payload.query
-    relevant_documents = vector_db.similarity_search(question, k=10)
-    answer = (
-        llm.answer_prompt(generate_prompt(question, relevant_documents))
-        if payload.generate_answer
-        else ""
-    )
-    return relevant_documents, answer
+    relevant_documents = milvus_client.similarity_search(question, embedder, k=10)
+    return relevant_documents, ""
 
 
-def search(payload: SearchRequest, llm: LLMModel) -> tuple[list[Document], str]:
-    vector_db = Milvus(
-        embedding_function=ml_models["embedder"],
-        connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=get_collection_name_from_connection(payload.connection_name),
-    )
-
-    return get_answer_and_documents(payload, vector_db, llm)
+def search(
+    payload: SearchRequest, milvus_client: Milvus
+) -> tuple[list[RetrievedPassage], str]:
+    ml_models["llm"]
+    embedder = ml_models["embedder"]
+    return get_answer_and_documents(payload, milvus_client, embedder)

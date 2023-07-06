@@ -1,12 +1,13 @@
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI
-from langchain.docstore.document import Document
 from pydantic import BaseModel
 
-from esearch.api.authorization import TokenData, get_current_user
-from esearch.api.lifespan import ml_models
+from esearch.api.authorization import UserData, get_current_user
+from esearch.api.exceptions import NotAuthenticatedException
 from esearch.core.search import SearchRequest, search
+from esearch.services.milvus.client import Milvus, milvus_dependency
+from esearch.services.milvus.entity import RetrievedPassage
 
 
 class SearchMatch(BaseModel):
@@ -19,14 +20,17 @@ class SearchMatch(BaseModel):
 
 class SearchResponse(BaseModel):
     answer: str
-    references: list[Document]
+    references: list[RetrievedPassage]
 
 
 def add_routes(app: FastAPI) -> None:
     @app.post("/api/search")
     async def search_route(
         search_request: SearchRequest,
-        token_data: Annotated[TokenData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user)],
+        milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> SearchResponse:
-        relevant_documents, answer = search(search_request, llm=ml_models["llm"])
+        if user_data.user_id is None:
+            raise NotAuthenticatedException()
+        relevant_documents, answer = search(search_request, milvus_client=milvus_client)
         return SearchResponse(answer=answer, references=relevant_documents)

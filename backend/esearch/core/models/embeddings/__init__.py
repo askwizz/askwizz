@@ -1,12 +1,12 @@
 import logging
 from typing import Literal
 
-from langchain.embeddings.base import Embeddings
+from esearch.core.models.embeddings.e5 import CustomEmbeddings
 
 EmbeddingModel = Literal["e5"] | Literal["huggingface"]
 
 
-def load_embedder(model_name: str) -> Embeddings:
+def load_embedder(model_name: str) -> CustomEmbeddings:
     logging.info(f"Loading embedder {model_name}")
     match model_name:
         case "e5":
@@ -18,6 +18,6 @@ def load_embedder(model_name: str) -> Embeddings:
                 CustomHuggingFaceEmbeddings,
             )
 
-            return CustomHuggingFaceEmbeddings()
+            return CustomHuggingFaceEmbeddings()  # type: ignore
         case _:
             raise ValueError(f"Unknown model name: {model_name}")  # noqa: TRY003
