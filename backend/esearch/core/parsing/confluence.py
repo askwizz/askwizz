@@ -81,8 +81,15 @@ def create_chunks_from_html(html: BeautifulSoup) -> List[ConfluenceChunk]:
 
 def get_confluence_passage_title(doc: Document, page: dict) -> str:
     page_title = page["title"]
+    space_key = page["space"]
     header = doc.metadata["header"]
-    return f"Page: {page_title} | Section: {header} | "
+    start_index = doc.metadata["start_index"]
+    end_index = doc.metadata["end_index"]
+    size = end_index - start_index
+    return (
+        f"Space: {space_key} | Page: {page_title} | Section: {header} |"
+        f"Start: {start_index} | Size: {size}"
+    )
 
 
 def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
