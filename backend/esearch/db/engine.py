@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 
 
 class Base(DeclarativeBase):
-    type_annotation_map = {
+    type_annotation_map = {  # noqa: RUF012
         str: String().with_variant(String(255), "mysql", "mariadb"),
     }
 

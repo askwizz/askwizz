@@ -37,7 +37,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
         if user_id is None:
             raise credentials_exception  # noqa: TRY301
         token_data = UserData(user_id=user_id)
-    except JWTError as e:
-        logging.exception(e)
+    except JWTError:
+        logging.exception("Error occured while decoding JWT token")
         raise credentials_exception
     return token_data

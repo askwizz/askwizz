@@ -25,10 +25,10 @@ class ConnectionConfiguration(BaseModel):
 
 
 class Connection(BaseModel):
+    id_: str
     configuration: ConnectionConfiguration
     created_at: datetime.datetime
     indexed_at: datetime.datetime
-    id_: str
     name: str
     status: ConnectionStatus
     source: ConnectionSource

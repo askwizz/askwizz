@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from esearch.api.settings import AppSettings
 
 
-def add_routes(app: FastAPI, app_settings: AppSettings):
+def add_routes(app: FastAPI, app_settings: AppSettings) -> None:
     @app.get("/api/connect/atlassian")
     async def oauth_start(request: Request) -> Response:
         oauth_callback_url = request.url_for(oauth_callback.__name__)
@@ -56,7 +56,9 @@ def add_routes(app: FastAPI, app_settings: AppSettings):
         return RedirectResponse(url=authorization_url)
 
     @app.get("/api/connect/atlassian/callback")
-    async def oauth_callback(request: Request, state: str, code: str):
+    async def oauth_callback(
+        request: Request, state: str, code: str  # noqa: ARG001
+    ) -> None:
         # TODO check state in HTTP cookie-based session
         oauth_callback_url = request.url_for(oauth_callback.__name__)
         token_host = "auth.atlassian.com"

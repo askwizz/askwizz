@@ -20,4 +20,4 @@ def load_embedder(model_name: str) -> CustomEmbeddings:
 
             return CustomHuggingFaceEmbeddings()  # type: ignore
         case _:
-            raise ValueError(f"Unknown model name: {model_name}")  # noqa: TRY003
+            raise ValueError(f"Unknown model name: {model_name}")
