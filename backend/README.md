@@ -58,6 +58,30 @@ poetry run uvicorn esearch.api.app:create_app --reload --log-level debug
 
 Server starts at http://127.0.0.1:8000.
 
+## Tests
+
+```bash
+poetry run pytest .
+```
+
+Generate snapshots
+
+```bash
+poetry run pytest --snapshot-update .
+```
+
+Formatter
+
+```bash
+poetry run black .
+```
+
+Ruff
+
+```bash
+poetry run ruff .
+```
+
 ## Entity Architecture
 
 **connection**

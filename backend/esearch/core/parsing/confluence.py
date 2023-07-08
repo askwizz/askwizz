@@ -232,7 +232,6 @@ def get_confluence_passages_generator(
     metadata = {
         "atlassian_domain": atlassian_domain,
         "atlassian_email": email,
-        "atlassian_token": token,
         "user_id": user_id,
     }
     generator_packer = get_generator_packer(1024)

@@ -41,7 +41,7 @@ class NewConnectionPayload(BaseModel):
         cls: "NewConnectionPayload", source: str  # noqa: N805
     ) -> str:
         if source not in ConnectionSource.__members__:
-            raise ValueError(f"Invalid source: {source} is not handled")  # noqa: TRY003
+            raise ValueError(f"Invalid source: {source} is not handled")
         return source
 
     @root_validator()
@@ -63,7 +63,7 @@ class NewConnectionPayload(BaseModel):
 
 def parse_source(source: str) -> ConnectionSource:
     if source not in ConnectionSource.__members__:
-        raise ValueError(f"Invalid source: {source} is not handled")  # noqa: TRY003
+        raise ValueError(f"Invalid source: {source} is not handled")
     return ConnectionSource(source)
 
 

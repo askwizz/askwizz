@@ -1,11 +1,10 @@
 from logging.config import fileConfig
 
-from esearch.db.engine import get_database_url_from_env
 import dotenv
-
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from esearch.db.engine import get_database_url_from_env
 
 # load environment variables from .env file
 dotenv.load_dotenv()
