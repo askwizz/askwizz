@@ -1,6 +1,18 @@
 import json
 
 from esearch.core.parsing.confluence import create_passages_from_page
+from esearch.core.passage.definition import Passage, PassageMetadata
+
+
+def remove_date(passage: Passage) -> Passage:
+    return Passage(
+        **{
+            **passage.dict(),
+            "metadata": PassageMetadata(
+                **{**passage.metadata.dict(), "indexed_at": "2022-10-10"}
+            ),
+        }
+    )
 
 
 def test_confluence_parser(snapshot: str) -> None:
@@ -12,4 +24,5 @@ def test_confluence_parser(snapshot: str) -> None:
         "user_id": "user_xnezifgrei",
     }
     passages = create_passages_from_page(page, metadata)
-    assert passages == snapshot
+    passages_without_date = [remove_date(p) for p in passages]
+    assert passages_without_date == snapshot
