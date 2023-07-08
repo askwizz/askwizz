@@ -58,3 +58,12 @@ docker-compose up
 docker exec -it api bash
 poetry run alembic upgrade head
 ```
+
+### Deploy using ngrok
+
+Install ngrok
+
+```
+ngrok config add-authtoken <your token>
+ngrok http 3000
+```
