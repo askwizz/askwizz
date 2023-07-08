@@ -1,11 +1,11 @@
 import logging
 
 import click
-from langchain.vectorstores import Milvus
 
-from esearch.core.models.embeddings.e5 import E5Basev2
+from esearch.core.models.embeddings.e5 import E5v2
 from esearch.core.models.rwkv import LLMModel
 from esearch.core.search import SearchRequest, get_answer_and_documents
+from esearch.services.milvus.client import Milvus
 
 
 @click.command("search")
@@ -43,17 +43,16 @@ def search_command(
             --rwkv_model_path "./tmp/rwkv-model.pth" \
             --collection_id "user_2Qklbs5sgdrrPJhZ8g1KtlfRmkH"
     """
-    embedder = E5Basev2()
-    vector_db = Milvus(
-        embedding_function=embedder,
-        connection_args={"host": "127.0.0.1", "port": "19530"},
-        collection_name=collection_id,
+    embedder = E5v2()
+    milvus_client = Milvus(
+        collection_id,
+        embedder,
     )
-    llm = LLMModel.from_path(rwkv_model_path)
+    LLMModel.from_path(rwkv_model_path)
     payload = SearchRequest(
         query=query,
         generate_answer=generate_answer,
     )
-    relevant_documents, answer = get_answer_and_documents(payload, vector_db, llm)
+    relevant_documents, answer = get_answer_and_documents(payload, milvus_client)
     logging.info(relevant_documents)
     logging.info(answer)

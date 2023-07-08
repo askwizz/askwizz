@@ -10,9 +10,9 @@ def load_embedder(model_name: str) -> CustomEmbeddings:
     logging.info(f"Loading embedder {model_name}")
     match model_name:
         case "e5":
-            from esearch.core.models.embeddings.e5 import E5Basev2
+            from esearch.core.models.embeddings.e5 import E5v2
 
-            return E5Basev2()
+            return E5v2()
         case "huggingface":
             from esearch.core.models.embeddings.huggingface import (
                 CustomHuggingFaceEmbeddings,

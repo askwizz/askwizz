@@ -54,9 +54,12 @@ def get_passage_metadata_schema() -> List[FieldSchema]:
 
 
 class Milvus:
-    def __init__(self: "Milvus", user_id: str | None) -> None:
+    def __init__(
+        self: "Milvus", user_id: str | None, embedder: CustomEmbeddings
+    ) -> None:
         self.collection_name = user_id or ""
         self.connection_alias = uuid4().hex
+        self.embedder = embedder
         self.host = "127.0.0.1"
         self.port = "19530"
         connections.connect(alias=self.connection_alias, host=self.host, port=self.port)
@@ -70,13 +73,14 @@ class Milvus:
         self._load_collection()
 
     def _get_collection_schema(self: "Milvus") -> CollectionSchema:
-        embedder: CustomEmbeddings = ml_models["embedder"]
         fields = [
             FieldSchema(
                 self._primary_field, DataType.INT64, is_primary=True, auto_id=True
             ),
             FieldSchema(
-                self._vector_field, DataType.FLOAT_VECTOR, dim=embedder.embedding_size
+                self._vector_field,
+                DataType.FLOAT_VECTOR,
+                dim=self.embedder.embedding_size,
             ),
             *get_passage_metadata_schema(),
         ]
@@ -163,6 +167,12 @@ class Milvus:
         self.collection.create_partition(connection_key)
 
         passage_texts = [p.text for p in passages]
+        debug = False
+        if debug:
+            with open("passage_texts.txt", "w") as f:
+                for item in passage_texts:
+                    f.write("%s\n" % item)
+
         try:
             embeddings = embedder.embed_documents(passage_texts)
         except NotImplementedError:
@@ -185,12 +195,11 @@ class Milvus:
     def similarity_search(
         self: "Milvus",
         query: str,
-        embedder: CustomEmbeddings,
         k: int = 4,
         param: Optional[dict] = None,
         **kwargs,  # noqa: ANN003
     ) -> List[RetrievedPassage]:
-        embedding = embedder.embed_query(query)
+        embedding = self.embedder.embed_query(query)
         if self.collection is None:
             logging.debug("No existing collection to search.")
             return []
@@ -241,7 +250,7 @@ class Milvus:
 async def milvus_dependency(
     user: Annotated[UserData, Depends(get_current_user)]
 ) -> AsyncGenerator[Milvus, None]:
-    milvus_client = Milvus(user.user_id)
+    milvus_client = Milvus(user.user_id, ml_models["embedder"])
     try:
         yield milvus_client
     finally:

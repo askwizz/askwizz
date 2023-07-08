@@ -5,7 +5,6 @@ from langchain.docstore.document import Document
 from pydantic import BaseModel
 
 from esearch.api.lifespan import ml_models
-from esearch.core.models.embeddings.e5 import CustomEmbeddings
 from esearch.services.milvus.client import Milvus
 from esearch.services.milvus.entity import RetrievedPassage
 
@@ -41,11 +40,10 @@ Detailed expert answer:
 def get_answer_and_documents(
     payload: SearchRequest,
     milvus_client: Milvus,
-    embedder: CustomEmbeddings,
 ) -> tuple[list[RetrievedPassage], str]:
     logging.info(f"Providing answer to question {payload.query}")
     question = payload.query
-    relevant_documents = milvus_client.similarity_search(question, embedder, k=10)
+    relevant_documents = milvus_client.similarity_search(question, k=10)
     return relevant_documents, ""
 
 
@@ -53,5 +51,4 @@ def search(
     payload: SearchRequest, milvus_client: Milvus
 ) -> tuple[list[RetrievedPassage], str]:
     ml_models["llm"]
-    embedder = ml_models["embedder"]
-    return get_answer_and_documents(payload, milvus_client, embedder)
+    return get_answer_and_documents(payload, milvus_client)

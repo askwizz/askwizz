@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List
+from typing import Any, List, Literal
 
 import torch.nn.functional as func
 from langchain.embeddings.base import Embeddings
@@ -18,20 +18,35 @@ class CustomEmbeddings(Embeddings):
     embedding_size: int
 
 
-class E5Basev2(BaseModel, CustomEmbeddings):
+MODEL_SIZES = {
+    "base": {
+        "size": 768,
+        "model": "intfloat/e5-base-v2",
+    },
+    "small": {
+        "size": 384,
+        "model": "intfloat/e5-small-v2",
+    },
+}
+
+model_type = Literal["base"] | Literal["small"]
+
+
+class E5v2(BaseModel, CustomEmbeddings):
     tokenizer: Any = None  #: :meta private:
     model: Any = None  #: :meta private:
     batch_size: int = 32
     embedding_size: int = 768
 
-    def __init__(self: "E5Basev2", **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(
+        self: "E5v2", model: model_type = "base", **kwargs: Any  # noqa: ANN401
+    ) -> None:
         super().__init__(**kwargs)
-        self.tokenizer = AutoTokenizer.from_pretrained("intfloat/e5-base-v2")
-        self.model = AutoModel.from_pretrained("intfloat/e5-base-v2")
+        self.embedding_size = MODEL_SIZES[model]["size"]
+        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_SIZES[model]["model"])
+        self.model = AutoModel.from_pretrained(MODEL_SIZES[model]["model"])
 
-    def _embed_texts(
-        self: "E5Basev2", texts: List[str], prompt: str
-    ) -> List[List[float]]:
+    def _embed_texts(self: "E5v2", texts: List[str], prompt: str) -> List[List[float]]:
         texts_with_prompt = [prompt + t for t in texts]
         batch_dict = self.tokenizer(
             texts_with_prompt,
@@ -47,7 +62,7 @@ class E5Basev2(BaseModel, CustomEmbeddings):
         embeddings = func.normalize(embeddings, p=2, dim=1)
         return embeddings.detach().numpy().tolist()
 
-    def embed_documents(self: "E5Basev2", texts: List[str]) -> List[List[float]]:
+    def embed_documents(self: "E5v2", texts: List[str]) -> List[List[float]]:
         logging.info(f"Embedding {len(texts)} passages with E5Basev2...")
         all_embeddings = []
         for i in tqdm(range(0, len(texts), self.batch_size)):
@@ -55,7 +70,7 @@ class E5Basev2(BaseModel, CustomEmbeddings):
             all_embeddings.extend(embeddings)
         return all_embeddings
 
-    def embed_query(self: "E5Basev2", text: str) -> List[float]:
+    def embed_query(self: "E5v2", text: str) -> List[float]:
         return self._embed_texts([text], "query: ")[0]
 
     class Config:
