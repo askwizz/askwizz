@@ -32,7 +32,7 @@ API_OAUTH_ATLASSIAN__CLIENT_ID=""
 API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
 ```
 
-Install backend Pyton environment using Poetry:
+Install backend Python environment using Poetry:
 
 ```console
 poetry install
@@ -80,6 +80,15 @@ Ruff
 
 ```bash
 poetry run ruff .
+```
+
+## Calling the API
+
+```
+curl -X POST http://127.0.0.1:8000/api/search \
+  -d '{ "query": "What is a bad bank ?" }' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer xxxxxx'
 ```
 
 ## Entity Architecture

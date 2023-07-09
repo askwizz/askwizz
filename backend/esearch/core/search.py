@@ -1,10 +1,14 @@
 import logging
 import os
+import uuid
 
 from langchain.docstore.document import Document
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from esearch.api.lifespan import ml_models
+from esearch.core.search_history.definition import SearchHistory
+from esearch.db.models.search_history import save_search_into_db
 from esearch.services.milvus.client import Milvus
 from esearch.services.milvus.entity import RetrievedPassage
 
@@ -52,3 +56,8 @@ def search(
 ) -> tuple[list[RetrievedPassage], str]:
     ml_models["llm"]
     return get_answer_and_documents(payload, milvus_client)
+
+
+def save_search_query(db: Session, user_id: str, query: str) -> None:
+    search = SearchHistory(id_=str(uuid.uuid4()), user_id=user_id, search=query)
+    save_search_into_db(db, search)

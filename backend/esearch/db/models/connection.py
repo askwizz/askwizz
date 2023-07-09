@@ -1,20 +1,11 @@
 import json
 from typing import List
 
-from pydantic import BaseModel
 from sqlalchemy import JSON, Column, DateTime, Integer, String
 from sqlalchemy.orm import Session
 
 from esearch.core.connection.definition import Connection, ConnectionConfiguration
 from esearch.db.engine import Base
-
-
-class ConnectionCreate(BaseModel):
-    atlassian_email: str
-    atlassian_token: str
-    atlassian_domain: str
-    name: str
-    user_id: str
 
 
 class ConnectionRow(Base):

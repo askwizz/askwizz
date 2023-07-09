@@ -1,10 +1,13 @@
 import logging
+import os
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
+
+from esearch.api.exceptions import NotAuthenticatedException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -22,10 +25,13 @@ DQIDAQAB
 
 
 class UserData(BaseModel):
-    user_id: str | None = None
+    user_id: str
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserData:
+    override_clerk = os.getenv("API_OVERRIDE_CLERK")
+    if override_clerk == "true":
+        return UserData(user_id="user_2Qklbs5sgdrrPJhZ8g1KtlfRmkH")
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -41,3 +47,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
         logging.exception("Error occured while decoding JWT token")
         raise credentials_exception
     return token_data
+
+
+def is_authenticated(user_data: UserData) -> bool:
+    return user_data.user_id is not None
+
+
+def throw_if_not_authenticated(user_data: UserData) -> None:
+    if not is_authenticated(user_data):
+        raise NotAuthenticatedException()
