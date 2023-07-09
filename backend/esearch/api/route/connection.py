@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from esearch.api.authorization import (
     UserData,
     get_current_user,
-    throw_if_not_authenticated,
 )
 from esearch.api.exceptions import DBNotInitializedException
 from esearch.api.lifespan import ml_models
@@ -34,7 +33,6 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> None:
         logging.info("New connection request")
-        throw_if_not_authenticated(user_data)
         if db is None:
             raise DBNotInitializedException()
         logging.info("Creating connection")
@@ -49,7 +47,6 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         user_data: Annotated[UserData, Depends(get_current_user)],
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
     ) -> List[Connection]:
-        throw_if_not_authenticated(user_data)
         if db is None:
             raise DBNotInitializedException()
 
@@ -62,7 +59,6 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> None:
-        throw_if_not_authenticated(user_data)
         if db is None:
             raise DBNotInitializedException()
 

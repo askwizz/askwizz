@@ -5,11 +5,12 @@ import uuid
 from typing import List
 
 from langchain.docstore.document import Document
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from esearch.api.lifespan import ml_models
 from esearch.core.search_history.definition import SearchHistory
+from esearch.db.constants import MAX_QUERY_SIZE
 from esearch.db.models.search_history import (
     get_search_history_from_user,
     save_search_into_db,
@@ -21,7 +22,7 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 
 
 class SearchRequest(BaseModel):
-    query: str
+    query: str = Field(max_length=MAX_QUERY_SIZE)
     generate_answer: bool = False
 
 

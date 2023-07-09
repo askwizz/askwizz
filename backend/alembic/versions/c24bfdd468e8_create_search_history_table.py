@@ -9,6 +9,7 @@ Create Date: 2023-07-09 17:18:57.648717
 import sqlalchemy as sa
 
 from alembic import op
+from esearch.db.constants import MAX_QUERY_SIZE
 
 # revision identifiers, used by Alembic.
 revision = "c24bfdd468e8"
@@ -23,8 +24,13 @@ def upgrade() -> None:
         table_name,
         sa.Column("id", sa.String(50), primary_key=True),
         sa.Column("user_id", sa.String(200), nullable=False),
-        sa.Column("search", sa.String(1024), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("search", sa.String(MAX_QUERY_SIZE), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            nullable=False,
+            server_default=sa.func.current_timestamp(),
+        ),
     )
 
 

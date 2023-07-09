@@ -88,7 +88,7 @@ def get_confluence_passage_title(doc: Document, page: dict) -> str:
     size = end_index - start_index
     return (
         f"Space: {space_key} | Page: {page_title} | Section: {header} |"
-        f"Start: {start_index} | Size: {size}"
+        f" Start: {start_index} | Size: {size}"
     )
 
 

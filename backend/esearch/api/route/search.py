@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from esearch.api.authorization import (
     UserData,
     get_current_user,
-    throw_if_not_authenticated,
 )
 from esearch.api.settings import AppSettings
 from esearch.core.search import SearchRequest, save_search_query, search
@@ -37,7 +36,6 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> SearchResponse:
-        throw_if_not_authenticated(user_data)
         save_search_query(db, user_data.user_id, search_request.query)
         relevant_documents, answer = search(search_request, milvus_client=milvus_client)
         return SearchResponse(answer=answer, references=relevant_documents)
