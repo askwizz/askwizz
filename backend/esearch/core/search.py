@@ -1,6 +1,8 @@
+import datetime
 import logging
 import os
 import uuid
+from typing import List
 
 from langchain.docstore.document import Document
 from pydantic import BaseModel
@@ -8,7 +10,10 @@ from sqlalchemy.orm import Session
 
 from esearch.api.lifespan import ml_models
 from esearch.core.search_history.definition import SearchHistory
-from esearch.db.models.search_history import save_search_into_db
+from esearch.db.models.search_history import (
+    get_search_history_from_user,
+    save_search_into_db,
+)
 from esearch.services.milvus.client import Milvus
 from esearch.services.milvus.entity import RetrievedPassage
 
@@ -59,5 +64,14 @@ def search(
 
 
 def save_search_query(db: Session, user_id: str, query: str) -> None:
-    search = SearchHistory(id_=str(uuid.uuid4()), user_id=user_id, search=query)
+    search = SearchHistory(
+        id_=str(uuid.uuid4()),
+        user_id=user_id,
+        search=query,
+        created_at=datetime.datetime.now(datetime.timezone.utc),
+    )
     save_search_into_db(db, search)
+
+
+def get_search_history(db: Session, user_id: str) -> List[SearchHistory]:
+    return get_search_history_from_user(db, user_id)

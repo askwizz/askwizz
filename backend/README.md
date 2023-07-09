@@ -91,6 +91,12 @@ curl -X POST http://127.0.0.1:8000/api/search \
   -H 'Authorization: Bearer xxxxxx'
 ```
 
+```
+curl http://127.0.0.1:8000/api/history/search \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer xxxxxx'
+```
+
 ## Entity Architecture
 
 **connection**

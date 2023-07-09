@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(50), primary_key=True),
         sa.Column("user_id", sa.String(200), nullable=False),
         sa.Column("search", sa.String(1024), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
     )
 
 
