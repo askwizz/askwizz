@@ -1,20 +1,11 @@
 import json
 from typing import List
 
-from pydantic import BaseModel
 from sqlalchemy import JSON, Column, DateTime, Integer, String
 from sqlalchemy.orm import Session
 
 from esearch.core.connection.definition import Connection, ConnectionConfiguration
 from esearch.db.engine import Base
-
-
-class ConnectionCreate(BaseModel):
-    atlassian_email: str
-    atlassian_token: str
-    atlassian_domain: str
-    name: str
-    user_id: str
 
 
 class ConnectionRow(Base):
@@ -86,3 +77,14 @@ def fetch_connections_of_user(db: Session, user_id: str) -> List[Connection]:
         convert_from_db_row_to_entity(row)
         for row in db.query(ConnectionRow).filter(ConnectionRow.user_id == user_id)
     ]
+
+
+def fetch_connection_of_user(
+    db: Session, user_id: str, connection_id: str
+) -> Connection:
+    connection = convert_from_db_row_to_entity(
+        db.query(ConnectionRow).filter(ConnectionRow.id == connection_id).one()
+    )
+    if connection.user_id != user_id:
+        raise Exception("Connection not found")
+    return connection

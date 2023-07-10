@@ -21,7 +21,7 @@ def test_confluence_parser(snapshot: str) -> None:
     metadata = {
         "atlassian_domain": "bpc-ai.atlassian.net",
         "atlassian_email": "toto@gmail.com",
-        "user_id": "user_xnezifgrei",
+        "connection_id": "conn_xnezifgrei",
     }
     passages = create_passages_from_page(page, metadata)
     passages_without_date = [remove_date(p) for p in passages]

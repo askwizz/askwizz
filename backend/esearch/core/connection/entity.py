@@ -13,6 +13,7 @@ from esearch.core.connection.definition import (
     ConnectionSource,
     ConnectionStatus,
 )
+from esearch.core.passage.hash import encode_string
 from esearch.db.models.connection import (
     ConnectionRow,
     convert_from_db_row_to_entity,
@@ -26,9 +27,8 @@ def get_connection_unique_key(
     configuration: ConnectionConfiguration, source: str
 ) -> str:
     connection_str = json.dumps(configuration.dict())
-    connection_hash = hash(f"{connection_str}{source}")
-    positive_hash = (connection_hash**2) % (10**8)
-    return f"CONN_{positive_hash}"
+    connection_hash = encode_string(f"{connection_str}{source}")
+    return f"CONN_{connection_hash}"
 
 
 class NewConnectionPayload(BaseModel):

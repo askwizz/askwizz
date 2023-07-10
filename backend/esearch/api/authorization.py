@@ -6,6 +6,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
+from esearch.api.settings import AppSettings, get_is_production, get_settings
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 ALGORITHM = "RS256"
@@ -22,10 +24,16 @@ DQIDAQAB
 
 
 class UserData(BaseModel):
-    user_id: str | None = None
+    user_id: str
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserData:
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    settings: Annotated[AppSettings, Depends(get_settings)],
+    is_production: Annotated[bool, Depends(get_is_production)],
+) -> UserData:
+    if settings.auth_userdata_override_id and not is_production:
+        return UserData(user_id=settings.auth_userdata_override_id)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

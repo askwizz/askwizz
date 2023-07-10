@@ -101,19 +101,8 @@ def ingest_connection_command(
             --email "maximeduvalsy@gmail.com" \
             --token "" \
             --sql_url "postgresql+psycopg2://postgres:password@127.0.0.1:5432/esearch"
-    poetry run python -m esearch.cli ingest_connection \
-            --atlassian_domain "bpc-ai.atlassian.net" \
-            --email "maximeduvalsy@gmail.com" \
-            --token "ATATT3xFfGF0LIyG73Yf66DBMLqkDaGaEykYY9WS_noptQ5vQf5Ir-8UUa7_8pfBuwCRpOcg2rAACUj6OoMHXBT7nAW9cXcs0XHc0KTsOBtttm6tM3DtXCcD1EERJ9PqUoi8tlpOi6KQzEGcXQOLakzVsopcKjnyh-2k6UIFpOl-cfKgJsAfN0U=717F7F23" \
-            --sql_url "postgresql+psycopg2://postgres:password@127.0.0.1:5432/esearch" \
-            --profile
-    poetry run python -m esearch.cli ingest_connection \
-            --atlassian_domain "bpc-ai.atlassian.net" \
-            --email "maximeduvalsy@gmail.com" \
-            --token "ATATT3xFfGF0LIyG73Yf66DBMLqkDaGaEykYY9WS_noptQ5vQf5Ir-8UUa7_8pfBuwCRpOcg2rAACUj6OoMHXBT7nAW9cXcs0XHc0KTsOBtttm6tM3DtXCcD1EERJ9PqUoi8tlpOi6KQzEGcXQOLakzVsopcKjnyh-2k6UIFpOl-cfKgJsAfN0U=717F7F23" \
-            --sql_url "postgresql+psycopg2://postgres:password@127.0.0.1:5432/esearch"
     """
     if profile:
-        profile_command(ingest_connection, atlassian_domain, email, token, sql_url)  # type: ignore
+        profile_command(ingest_connection, atlassian_domain, email, token, sql_url)  # type: ignore  # noqa: E501
     else:
         ingest_connection(atlassian_domain, email, token, sql_url)

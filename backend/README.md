@@ -32,7 +32,7 @@ API_OAUTH_ATLASSIAN__CLIENT_ID=""
 API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
 ```
 
-Install backend Pyton environment using Poetry:
+Install backend Python environment using Poetry:
 
 ```console
 poetry install
@@ -80,6 +80,28 @@ Ruff
 
 ```bash
 poetry run ruff .
+```
+
+## Calling the API
+
+```
+curl -X POST http://127.0.0.1:8000/api/search \
+  -d '{ "query": "What is a bad bank ?" }' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer xxxxxx'
+```
+
+```
+curl http://127.0.0.1:8000/api/history/search \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer xxxxxx'
+```
+
+```
+curl -X POST http://127.0.0.1:8000/api/passage/text \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer xxxxxx' \
+  -d '{ "connection_id": "353cad4f-5476-4581-801e-bf7e89d0d533", "config": { "confluence": { "passage_hash": "6268a86c229bec218a9b0ffc261e359e", "page_path": "/spaces/TW/pages/688378/Bad+bank" } } }'
 ```
 
 ## Entity Architecture

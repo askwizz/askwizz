@@ -107,7 +107,6 @@ export default function AtlassianForm() {
       const headers = new Headers();
       headers.append("Content-Type", "application/json;charset=utf-8");
       headers.append("Authorization", `Bearer ${token}`);
-      console.log(values);
       return fetch("/api/new-connection", {
         headers,
         method: "POST",
