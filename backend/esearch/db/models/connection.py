@@ -77,3 +77,14 @@ def fetch_connections_of_user(db: Session, user_id: str) -> List[Connection]:
         convert_from_db_row_to_entity(row)
         for row in db.query(ConnectionRow).filter(ConnectionRow.user_id == user_id)
     ]
+
+
+def fetch_connection_of_user(
+    db: Session, user_id: str, connection_id: str
+) -> Connection:
+    connection = convert_from_db_row_to_entity(
+        db.query(ConnectionRow).filter(ConnectionRow.id == connection_id).one()
+    )
+    if connection.user_id != user_id:
+        raise Exception("Connection not found")
+    return connection

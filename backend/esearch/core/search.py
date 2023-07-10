@@ -61,7 +61,8 @@ def search(
     payload: SearchRequest, milvus_client: Milvus
 ) -> tuple[list[RetrievedPassage], str]:
     ml_models["llm"]
-    return get_answer_and_documents(payload, milvus_client)
+    documents, answer = get_answer_and_documents(payload, milvus_client)
+    return documents, answer
 
 
 def save_search_query(db: Session, user_id: str, query: str) -> None:

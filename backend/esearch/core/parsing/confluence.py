@@ -19,10 +19,11 @@ from esearch.core.passage.definition import (
     Passage,
     PassageMetadata,
 )
+from esearch.core.passage.hash import get_passage_hash
 
 TEXT_SPLITTERS = [
     RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=800,
         chunk_overlap=200,
         length_function=len,
         separators=["\n\n", "\n", ".", " ", ""],
@@ -104,7 +105,7 @@ def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
     documents_with_reference: List[Document] = []
     for doc in documents_from_raw_chunks:
         for splitter in TEXT_SPLITTERS:
-            for chunk in splitter.split_text(doc.page_content):
+            for i, chunk in enumerate(splitter.split_text(doc.page_content)):
                 start_index = doc.page_content.find(chunk)
                 documents_with_reference.append(
                     Document(
@@ -113,6 +114,7 @@ def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
                             **copy.deepcopy(doc.metadata),
                             "start_index": start_index,
                             "end_index": start_index + len(chunk),
+                            "chunk_id": i,
                         },
                     )
                 )
@@ -122,7 +124,7 @@ def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
 def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
     atlassian_domain = metadata["atlassian_domain"]
     atlassian_email = metadata["atlassian_email"]
-    user_id = metadata["user_id"]
+    connection_id = metadata["connection_id"]
 
     indexed_at = str(datetime.datetime.now(timezone.utc))
 
@@ -145,17 +147,19 @@ def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
                 link=f"{page_link}#{doc.metadata['path']}",
                 document_link=page_link,
                 reference=DocumentReference(
+                    text_hash=get_passage_hash(doc.page_content),
                     confluence=ConfluenceDocumentReference(
+                        chunk_group=doc.metadata["path"],
+                        chunk_id=doc.metadata["chunk_id"],
                         domain=atlassian_domain,
-                        page_path=page_path,
-                        chunk_id=doc.metadata["path"],
-                        start_index=doc.metadata["start_index"],
                         end_index=doc.metadata["end_index"],
+                        page_path=page_path,
                         space_key=page["space"],
-                    )
+                        start_index=doc.metadata["start_index"],
+                    ),
                 ),
                 filetype=DocumentType.CONFLUENCE,
-                connection_id=user_id,
+                connection_id=connection_id,
                 indexor=atlassian_email,
             ),
         )
@@ -226,13 +230,13 @@ def confluence_pages_generator(
 
 
 def get_confluence_passages_generator(
-    user_id: str, atlassian_domain: str, email: str, token: str
+    connection_id: str, atlassian_domain: str, email: str, token: str
 ) -> Generator[Tuple[List[Passage], int], None, None]:
     pages_generator = confluence_pages_generator(atlassian_domain, email, token)
     metadata = {
         "atlassian_domain": atlassian_domain,
         "atlassian_email": email,
-        "user_id": user_id,
+        "connection_id": connection_id,
     }
     generator_packer = get_generator_packer(1024)
     return generator_packer(create_passages_from_pages(pages_generator, metadata))

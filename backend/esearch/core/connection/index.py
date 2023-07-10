@@ -39,7 +39,7 @@ def get_confluence_passages(
 
     atlassian_configuration: AtlassianData = connection.configuration.atlassian  # type: ignore  # noqa: E501
     return get_confluence_passages_generator(
-        connection.user_id,
+        connection.id_,
         atlassian_configuration.atlassian_domain,
         atlassian_configuration.atlassian_email,
         atlassian_configuration.atlassian_token,
@@ -65,7 +65,7 @@ def index_passages(
     return IndexingResult(passages=passage_count, documents=page_count)
 
 
-source_to_passages: Dict[
+source_to_passages_generator: Dict[
     ConnectionSource,
     Callable[[Connection], Generator[Tuple[List[Passage], int], None, None]],
 ] = {
@@ -81,7 +81,7 @@ def index_connection(
 ) -> None:
     logging.info(f"Starting indexing connection {connection.id_}")
     t1 = time.time()
-    passage_generator = source_to_passages[connection.source](connection)
+    passage_generator = source_to_passages_generator[connection.source](connection)
     indexing_result = index_passages(
         passage_generator, connection, embedder, milvus_client
     )
