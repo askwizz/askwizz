@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 import dotenv
 from fastapi import Depends
@@ -16,7 +16,7 @@ class AppSettings(BaseSettings):
     embedder_model_name: str = Field(default=...)
     sqlalchemy_database_url: str = Field(default=...)
     auth_userdata_override_id: str = Field(default=...)
-    environment: str = Field(default=...)
+    environment: Literal["prod"] | Literal["dev"] = Field(default=...)
 
     class Config:
         env_prefix = "api_"
