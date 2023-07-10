@@ -71,7 +71,7 @@ def get_passage_text(
 ) -> str:
     connection = fetch_connection_of_user(db, user_id, connection_id)
     if connection.source == ConnectionSource.CONFLUENCE:
-        confluence_config: ConfluencePassageTextPayload = config.confluence  # type: ignore
+        confluence_config: ConfluencePassageTextPayload = config.confluence  # type: ignore  # noqa: E501
         return get_confluence_text(
             connection,
             connection_id,
