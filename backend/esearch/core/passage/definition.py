@@ -4,6 +4,8 @@ from pydantic import BaseModel
 
 
 class ConfluenceDocumentReference(BaseModel):
+    page_title: str
+    section: str
     domain: str
     page_path: str
     chunk_id: str
@@ -11,6 +13,7 @@ class ConfluenceDocumentReference(BaseModel):
     start_index: int
     end_index: int
     space_key: str
+    space_name: str
 
 
 class DocumentReference(BaseModel):
@@ -23,7 +26,6 @@ class DocumentType(Enum):
 
 
 class PassageMetadata(BaseModel):
-    title: str
     indexed_at: str
     created_at: str
     last_update: str

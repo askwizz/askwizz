@@ -1,8 +1,15 @@
 import Image from "next/image";
 import {
+  CalendarPlus,
+  CalendarSearch,
+  Contact,
+  DownloadCloud,
+  FileClock,
+  Flame,
   LucideProps,
   Moon,
   PlusSquare,
+  Quote,
   SunMedium,
   Twitter,
   type Icon as LucideIcon,
@@ -44,4 +51,11 @@ export const Icons = {
     </svg>
   ),
   plusSquare: PlusSquare,
+  downloadCloud: DownloadCloud,
+  calendarPlus: CalendarPlus,
+  calendarSearch: CalendarSearch,
+  contact: Contact,
+  flame: Flame,
+  fileClock: FileClock,
+  quote: Quote,
 };

@@ -23,29 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Icons } from "@/components/icons";
 
 import ConfluenceForm from "./ConfluenceForm";
+import { SourceProperties } from "./constants";
 import { AVAILABLE_SOURCES, Source } from "./types";
-
-type SourceProperty = {
-  title: string;
-  icon: JSX.Element;
-  disabled: boolean;
-};
-
-const SourceProperties: Record<Source, SourceProperty> = {
-  CONFLUENCE: {
-    title: "Confluence",
-    icon: <Icons.confluence width={20} />,
-    disabled: false,
-  },
-  JIRA: {
-    title: "Jira (coming soon...)",
-    icon: <Icons.confluence width={20} />,
-    disabled: true,
-  },
-};
 
 const formSchema = z.object({
   name: z.string().min(2, "Too short").max(80, "Too long"),

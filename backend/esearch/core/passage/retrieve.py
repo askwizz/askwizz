@@ -44,7 +44,8 @@ def get_confluence_text(
     page_id = page_id_result.group(0)
     space_key = space_key_result.group(0)
     page: dict = confluence.get_page_by_id(page_id, expand="body.storage,version,history")  # type: ignore  # noqa: E501
-    page["space"] = space_key
+    page["space_key"] = space_key
+    page["space_name"] = space_key
     if not page:
         raise Exception("Passage not found")
     metadata = {
