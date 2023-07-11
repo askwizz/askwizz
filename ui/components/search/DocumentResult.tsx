@@ -131,7 +131,7 @@ export default function DocumentResult({ document }: DocumentResultProps) {
                       rel="noopener"
                       target="_blank"
                     >
-                      <div className="flex flex-row items-center justify-between">
+                      <div className="grid auto-cols-max grid-flow-col items-center gap-3">
                         <span>{getPassageTitle(firstSectionPassage)}</span>
                         <div className="flex flex-row items-center">
                           <Icons.quote width={16} />
