@@ -161,10 +161,12 @@ class Milvus:
         embedder: CustomEmbeddings,
         passages: List[Passage],
         connection_key: str,
+        is_first_batch: bool = False,
     ) -> None:
-        if self.collection.has_partition(connection_key):
-            self.delete_partition(connection_key)
-        self.collection.create_partition(connection_key)
+        if is_first_batch:
+            if self.collection.has_partition(connection_key):
+                self.delete_partition(connection_key)
+            self.collection.create_partition(connection_key)
 
         passage_texts = [p.text for p in passages]
         debug = False

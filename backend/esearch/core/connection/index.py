@@ -54,14 +54,18 @@ def index_passages(
 ) -> IndexingResult:
     passage_count = 0
     page_count = 0
+    batch_id = 0
     for passages, page_count in passages_generator:  # noqa: B007
         logging.info(f"Indexing {len(passages)} passages")
+        is_first_batch = batch_id == 0
         milvus_client.index_passages(
             embedder=embedder,
             passages=passages,
             connection_key=connection.connection_key,
+            is_first_batch=is_first_batch,
         )
         passage_count += len(passages)
+        batch_id += 1
     return IndexingResult(passages=passage_count, documents=page_count)
 
 

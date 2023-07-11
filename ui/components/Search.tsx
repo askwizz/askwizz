@@ -22,9 +22,15 @@ export type PassageMetadata = {
   document_link: string;
   reference: {
     confluence?: {
+      chunk_group: string;
+      chunk_id: string;
       domain: string;
       page_path: string;
+      end_index: number;
+      start_index: number;
+      space_key: string;
     };
+    text_hash: string;
   };
   filetype: DocumentType;
   connection_id: string;
@@ -59,7 +65,6 @@ export default function Search() {
   const handleClickOnSearch = () => {
     const data = {
       query: search,
-      connection_name: "From_CLI",
       generate_answer: false,
     };
 
