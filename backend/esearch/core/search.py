@@ -53,7 +53,7 @@ def get_answer_and_documents(
 ) -> tuple[list[RetrievedPassage], str]:
     logging.info(f"Providing answer to question {payload.query}")
     question = payload.query
-    relevant_documents = milvus_client.similarity_search(question, k=10)
+    relevant_documents = milvus_client.similarity_search(question, k=30)
     return relevant_documents, ""
 
 
