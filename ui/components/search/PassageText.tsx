@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
 import { Icons } from "../icons";
-import { Button } from "../ui/button";
-import useRetrievePassageText from "./hooks/useRetrievePassageText";
 import { Passage } from "./types";
 
 type PassageProps = {
@@ -12,9 +8,7 @@ type PassageProps = {
 };
 
 export default function PassageText({ passage }: PassageProps) {
-  const [didFetchText, setDidFetchText] = useState(false);
-  const { fetchText, text } = useRetrievePassageText(passage.metadata);
-  const textDisplayed = text || "Loading...";
+  const textDisplayed = passage.text || "Error: original text not found";
 
   return (
     <div className="mt-1 flex flex-col">
@@ -23,18 +17,8 @@ export default function PassageText({ passage }: PassageProps) {
           <Icons.flame width={16} />
           <span>{`${(passage.score * 100).toFixed(1)}%`}</span>
         </div>
-        <Button
-          onClick={() => {
-            fetchText();
-            setDidFetchText(true);
-          }}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 h-6 px-2"
-          disabled={didFetchText}
-        >
-          <Icons.downloadCloud />
-        </Button>
       </div>
-      {didFetchText && <span className="my-1">{textDisplayed}</span>}
+      <span className="my-1">{textDisplayed}</span>
     </div>
   );
 }

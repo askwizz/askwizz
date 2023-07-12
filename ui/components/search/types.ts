@@ -35,6 +35,7 @@ export type Passage = {
   metadata: PassageMetadata;
   score: number;
   passage_id: number;
+  text: string;
 };
 
 export type JsonResponse = {
