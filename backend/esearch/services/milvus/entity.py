@@ -7,3 +7,4 @@ class RetrievedPassage(BaseModel):
     metadata: PassageMetadata
     score: float
     passage_id: int
+    text: str | None = None

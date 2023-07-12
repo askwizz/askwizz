@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from esearch.api.lifespan import ml_models
+from esearch.core.passage.retrieve import get_text_from_passage
 from esearch.core.search_history.definition import SearchHistory
 from esearch.db.constants import MAX_QUERY_SIZE
 from esearch.db.models.search_history import (
@@ -23,6 +24,7 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 
 class SearchRequest(BaseModel):
     query: str = Field(max_length=MAX_QUERY_SIZE)
+    query_texts: bool = True
     generate_answer: bool = False
 
 
@@ -57,11 +59,32 @@ def get_answer_and_documents(
     return relevant_documents, ""
 
 
+def add_text_to_passage(db: Session, user_id: str, passage: RetrievedPassage) -> None:
+    try:
+        text = get_text_from_passage(db, user_id, passage.metadata)
+        passage.text = text
+    except:  # noqa: E722
+        logging.exception("Could not retrieve text from passage")
+        passage.text = ""
+
+
+def add_texts_to_passages(
+    db: Session, user_id: str, passages: list[RetrievedPassage]
+) -> None:
+    for passage in passages:
+        add_text_to_passage(db, user_id, passage)
+
+
 def search(
-    payload: SearchRequest, milvus_client: Milvus
+    payload: SearchRequest,
+    milvus_client: Milvus,
+    db: Session,
+    user_id: str,
 ) -> tuple[list[RetrievedPassage], str]:
     ml_models["llm"]
     documents, answer = get_answer_and_documents(payload, milvus_client)
+    if payload.query_texts:
+        add_texts_to_passages(db, user_id, documents)
     return documents, answer
 
 

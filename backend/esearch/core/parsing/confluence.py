@@ -80,19 +80,6 @@ def create_chunks_from_html(html: BeautifulSoup) -> List[ConfluenceChunk]:
     return create_chunks_from_element(page_elements)
 
 
-def get_confluence_passage_title(doc: Document, page: dict) -> str:
-    page_title = page["title"]
-    space_key = page["space"]
-    header = doc.metadata["header"]
-    start_index = doc.metadata["start_index"]
-    end_index = doc.metadata["end_index"]
-    size = end_index - start_index
-    return (
-        f"Space: {space_key} | Page: {page_title} | Section: {header} |"
-        f" Start: {start_index} | Size: {size}"
-    )
-
-
 def get_documents_from_html(html: BeautifulSoup) -> List[Document]:
     chunks = create_chunks_from_html(html)
     documents_from_raw_chunks = [
@@ -126,7 +113,7 @@ def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
     atlassian_email = metadata["atlassian_email"]
     connection_id = metadata["connection_id"]
 
-    indexed_at = str(datetime.datetime.now(timezone.utc))
+    indexed_at = datetime.datetime.now(timezone.utc).isoformat()
 
     page_path = page["_links"]["webui"]
     page_link = f"https://{atlassian_domain}/wiki{page_path}"
@@ -139,7 +126,6 @@ def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
         Passage(
             text=doc.page_content,
             metadata=PassageMetadata(
-                title=get_confluence_passage_title(doc, page),
                 indexed_at=str(indexed_at),
                 created_at=page_creation_date,
                 last_update=page["version"]["when"],
@@ -154,7 +140,10 @@ def create_passages_from_page(page: dict, metadata: dict) -> List[Passage]:
                         domain=atlassian_domain,
                         end_index=doc.metadata["end_index"],
                         page_path=page_path,
-                        space_key=page["space"],
+                        page_title=page["title"],
+                        section=doc.metadata["header"],
+                        space_key=page["space_key"],
+                        space_name=page["space_name"],
                         start_index=doc.metadata["start_index"],
                     ),
                 ),
@@ -181,15 +170,20 @@ def create_passages_from_pages(
 
 def confluence_pages_from_space(
     confluence: Confluence,
-    space_key: str,
+    space: dict,
     start: int,
     limit: int,
     **kwargs: Any,  # noqa: ANN401
 ) -> List[dict]:
+    space_key = space["key"]
     space_pages = confluence.get_all_pages_from_space(
         space_key, start=start, limit=limit, **kwargs
     )
-    return [{"space": space_key, **page} for page in space_pages]
+    space_metadata = {
+        "space_key": space_key,
+        "space_name": space["name"],
+    }
+    return [{**space_metadata, **page} for page in space_pages]
 
 
 def confluence_pages_generator(
@@ -212,7 +206,7 @@ def confluence_pages_generator(
         start = 0
         limit = 100
         space_pages = confluence_pages_from_space(
-            confluence, space["key"], start=0, limit=limit, **constant_query_params
+            confluence, space, start=0, limit=limit, **constant_query_params
         )
         pages_count += len(space_pages)
         yield space_pages, pages_count
@@ -220,7 +214,7 @@ def confluence_pages_generator(
             start += limit
             space_pages = confluence_pages_from_space(
                 confluence,
-                space["key"],
+                space,
                 start=start,
                 limit=limit,
                 **constant_query_params,

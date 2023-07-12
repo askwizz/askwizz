@@ -1,8 +1,15 @@
 import Image from "next/image";
 import {
+  CalendarPlus,
+  CalendarSearch,
+  Contact,
+  DownloadCloud,
+  FileClock,
+  Flame,
   LucideProps,
   Moon,
   PlusSquare,
+  Quote,
   SunMedium,
   Twitter,
   type Icon as LucideIcon,
@@ -30,7 +37,9 @@ export const Icons = {
       ></path>
     </svg>
   ),
-  askWizzLogo: () => <Image src="/logo.png" alt="me" width="128" height="64" />,
+  askWizzLogo: () => (
+    <Image src="/logo2.png" alt="me" width="80" height="100" />
+  ),
   confluence: (props: LucideProps) => (
     <svg viewBox="0 0 32 32" {...props}>
       <path
@@ -44,4 +53,11 @@ export const Icons = {
     </svg>
   ),
   plusSquare: PlusSquare,
+  downloadCloud: DownloadCloud,
+  calendarPlus: CalendarPlus,
+  calendarSearch: CalendarSearch,
+  contact: Contact,
+  flame: Flame,
+  fileClock: FileClock,
+  quote: Quote,
 };

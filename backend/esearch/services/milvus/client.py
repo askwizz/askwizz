@@ -39,7 +39,6 @@ DEFAULT_SEARCH_PARAMS = {
 
 def get_passage_metadata_schema() -> List[FieldSchema]:
     return [
-        FieldSchema("title", DataType.VARCHAR, max_length=1024),
         FieldSchema("indexed_at", DataType.VARCHAR, max_length=256),
         FieldSchema("created_at", DataType.VARCHAR, max_length=256),
         FieldSchema("last_update", DataType.VARCHAR, max_length=256),
@@ -229,7 +228,6 @@ class Milvus:
             RetrievedPassage(
                 score=result.score,
                 metadata=PassageMetadata(
-                    title=result.entity.get("title"),
                     indexed_at=result.entity.get("indexed_at"),
                     created_at=result.entity.get("created_at"),
                     last_update=result.entity.get("last_update"),

@@ -11,7 +11,7 @@ from esearch.api.authorization import (
 from esearch.api.settings import AppSettings
 from esearch.core.passage.retrieve import (
     PassageTextPayload,
-    get_passage_text,
+    get_text_from_passage_payload,
 )
 from esearch.core.search import SearchRequest, save_search_query, search
 from esearch.db.engine import get_db
@@ -46,7 +46,9 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> SearchResponse:
         save_search_query(db, user_data.user_id, search_request.query)
-        relevant_documents, answer = search(search_request, milvus_client=milvus_client)
+        relevant_documents, answer = search(
+            search_request, milvus_client, db, user_data.user_id
+        )
         return SearchResponse(answer=answer, references=relevant_documents)
 
     @app.post("/api/passage/text")
@@ -55,7 +57,7 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         user_data: Annotated[UserData, Depends(get_current_user)],
     ) -> str:
-        return get_passage_text(
+        return get_text_from_passage_payload(
             db,
             user_data.user_id,
             passage.connection_id,
