@@ -37,7 +37,9 @@ export const Icons = {
       ></path>
     </svg>
   ),
-  askWizzLogo: () => <Image src="/logo.png" alt="me" width="128" height="64" />,
+  askWizzLogo: () => (
+    <Image src="/logo2.png" alt="me" width="80" height="100" />
+  ),
   confluence: (props: LucideProps) => (
     <svg viewBox="0 0 32 32" {...props}>
       <path
