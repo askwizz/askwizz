@@ -6,6 +6,7 @@ import useGetAuthToken from "@/hooks/useGetAuthToken";
 
 import { Icons } from "../icons";
 import { Passage } from "./types";
+import Loader from "../loader/Loader";
 
 type PassageProps = {
   passage: Passage;
@@ -14,9 +15,7 @@ type PassageProps = {
 
 export default function PassageText({ passage, setPassageText }: PassageProps) {
   const token = useGetAuthToken();
-  const [text, setText] = useState(
-    passage.text || "Error: original text not found / fetched",
-  );
+  const [text, setText] = useState(passage.text);
   const getPassageText = () => {
     const fetchPassageText = async () => {
       const headers = new Headers();
@@ -44,9 +43,10 @@ export default function PassageText({ passage, setPassageText }: PassageProps) {
   };
 
   useEffect(() => {
+    if (!token) return;
     getPassageText();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token]);
 
   return (
     <div className="mt-1 flex flex-col">
@@ -56,7 +56,13 @@ export default function PassageText({ passage, setPassageText }: PassageProps) {
           <span>{`${(passage.score * 100).toFixed(1)}%`}</span>
         </div>
       </div>
-      <span className="my-1">{text}</span>
+      {text ? (
+        <span className="my-1">{text}</span>
+      ) : (
+        <span className="my-1">
+          <Loader />
+        </span>
+      )}
     </div>
   );
 }

@@ -51,4 +51,7 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
                 logging.info("Providing answer to query")
                 callback = get_callback(websocket)
                 parsed_message = QueryMessage(**json.loads(data.message))
-                await provide_answers(llm, parsed_message, callback)
+                answer = await provide_answers(llm, parsed_message, callback)
+                await write_message(
+                    websocket, SentMessage(kind="ANSWER_STOP", message=answer)
+                )

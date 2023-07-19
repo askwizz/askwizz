@@ -7,6 +7,7 @@ export default function useGroupResponseByDocument(
   references: Passage[] | undefined,
 ) {
   const responseGroupedByDocument = useMemo(() => {
+    if (!references) return null;
     return sortBy(
       Object.entries(
         groupBy(references, (reference) => reference.metadata.document_link),

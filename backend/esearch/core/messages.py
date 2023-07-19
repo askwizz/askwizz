@@ -14,5 +14,5 @@ class QueryMessage(BaseModel):
 
 
 class SentMessage(BaseModel):
-    kind: Literal["CLEAR", "ANSWER"]
+    kind: Literal["CLEAR", "ANSWER", "ANSWER_STOP"]
     message: str

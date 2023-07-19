@@ -12,12 +12,14 @@ import useGroupResponseByDocument from "./hooks/useGroupResponseByDocument";
 import useKeyboardShortcut from "./hooks/useKeyboardShortcut";
 import useProvideAnswer from "./hooks/useProvideAnswer";
 import { JsonResponse } from "./types";
+import Loader from "../loader/Loader";
 
 export default function Search() {
   const [search, setSearch] = useState("What is a bad bank ?");
+  const [textInput, setTextInput] = useState("What is a bad bank ?");
   const [response, setResponse] = useState<JsonResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [answer, setAnswer] = useState<string>("");
+
   const token = useGetAuthToken();
 
   const setPassageText = (text: string, textHash: string) => {
@@ -34,7 +36,8 @@ export default function Search() {
   };
 
   const handleClickOnSearch = useCallback(() => {
-    const payloadData = { query: search };
+    setSearch(textInput);
+    const payloadData = { query: textInput };
     const fetchSearchResults = async () => {
       const headers = new Headers();
       headers.append("Content-Type", "application/json;charset=utf-8");
@@ -53,10 +56,14 @@ export default function Search() {
         setResponse(parsedResponse);
       })
       .finally(() => setLoading(false));
-  }, [token, search]);
+  }, [token, textInput]);
 
   useKeyboardShortcut({ handleClickOnSearch });
-  useProvideAnswer(setAnswer, response?.references, search);
+
+  const { answer, loading: loadingAnswer } = useProvideAnswer(
+    response?.references,
+    search,
+  );
 
   const responseGroupedByDocument = useGroupResponseByDocument(
     response?.references,
@@ -70,17 +77,26 @@ export default function Search() {
           type="search"
           placeholder="What is my company's policy..."
           maxLength={1000}
-          onChange={(e) => setSearch(e.target.value)}
-          value={search}
+          onChange={(e) => setTextInput(e.target.value)}
+          value={textInput}
         />
         <Button type="submit" onClick={handleClickOnSearch}>
           Search
         </Button>
       </div>
-      <div className="mt-8 text-sm">{answer}</div>
+      {loadingAnswer && (
+        <div className="flex h-full w-full justify-center">
+          <Loader />
+        </div>
+      )}
+      {answer && <div className="mt-8 text-sm">{answer}</div>}
       <div className="mt-4 flex h-32 w-full flex-col">
-        {loading && <span>Loading...</span>}
-        {responseGroupedByDocument.map((document) => (
+        {loading && (
+          <div className="flex h-full w-full justify-center">
+            <Loader />
+          </div>
+        )}
+        {responseGroupedByDocument?.map((document) => (
           <div key={document.document_link} className="flex flex-col">
             <Separator className="my-2" />
             <DocumentResult
