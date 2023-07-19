@@ -39,7 +39,6 @@ export type Passage = {
 };
 
 export type JsonResponse = {
-  answer: string;
   references: Passage[];
 };
 

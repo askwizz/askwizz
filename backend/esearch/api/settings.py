@@ -12,7 +12,8 @@ class OAuthConfig(BaseModel):
 
 class AppSettings(BaseSettings):
     oauth_atlassian: OAuthConfig = Field(default=...)
-    rwkv_model_path: str = Field(default=...)
+    llm_name: str = Field(default=...)
+    llm_path: str = Field(default=...)
     embedder_model_name: str = Field(default=...)
     sqlalchemy_database_url: str = Field(default=...)
     auth_userdata_override_id: str = Field(default=...)
@@ -31,4 +32,8 @@ def get_settings() -> AppSettings:
 def get_is_production(
     settings: Annotated[AppSettings, Depends(get_settings)],
 ) -> bool:
+    return is_production(settings)
+
+
+def is_production(settings: AppSettings) -> bool:
     return settings.environment == "prod"

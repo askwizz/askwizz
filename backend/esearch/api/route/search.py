@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from esearch.api.authorization import (
     UserData,
-    get_current_user,
+    get_current_user_dependency,
 )
 from esearch.api.settings import AppSettings
 from esearch.core.passage.retrieve import (
@@ -28,7 +28,6 @@ class SearchMatch(BaseModel):
 
 
 class SearchResponse(BaseModel):
-    answer: str
     references: list[RetrievedPassage]
 
 
@@ -41,21 +40,21 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
     @app.post("/api/search")
     async def search_route(
         search_request: SearchRequest,
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> SearchResponse:
         save_search_query(db, user_data.user_id, search_request.query)
-        relevant_documents, answer = search(
+        relevant_documents = search(
             search_request, milvus_client, db, user_data.user_id
         )
-        return SearchResponse(answer=answer, references=relevant_documents)
+        return SearchResponse(references=relevant_documents)
 
     @app.post("/api/passage/text")
     async def passage_text(
         passage: PassageTextRequest,
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
     ) -> str:
         return get_text_from_passage_payload(
             db,

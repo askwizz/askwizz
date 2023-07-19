@@ -25,7 +25,8 @@ wget https://huggingface.co/BlinkDL/rwkv-4-raven/resolve/main/RWKV-4-Raven-1B5-v
 Create `.env`:
 
 ```
-API_RWKV_MODEL_PATH="./tmp/rwkv-model.pth"
+API_LLM_NAME=rwkv
+API_LLM_PATH="./tmp/rwkv-model.pth"
 API_EMBEDDER_MODEL_NAME="e5"
 API_SQLALCHEMY_DATABASE_URL="postgresql+psycopg2://postgres:password@127.0.0.1:5432/esearch"
 API_OAUTH_ATLASSIAN__CLIENT_ID=""

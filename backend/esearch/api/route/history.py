@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from esearch.api.authorization import (
     UserData,
-    get_current_user,
+    get_current_user_dependency,
 )
 from esearch.api.settings import AppSettings
 from esearch.core.search import get_search_history
@@ -21,7 +21,7 @@ class SearchHistoryResponse(BaseModel):
 def add_routes(app: FastAPI, settings: AppSettings) -> None:
     @app.get("/api/history/search")
     async def search_history(
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
     ) -> SearchHistoryResponse:
         searches = get_search_history(db, user_data.user_id)

@@ -58,7 +58,8 @@ services:
     environment:
       - API_OAUTH_ATLASSIAN__CLIENT_ID=""
       - API_OAUTH_ATLASSIAN__CLIENT_SECRET=""
-      - API_RWKV_MODEL_PATH=./tmp/rwkv-model
+      - API_LLM_PATH=./tmp/rwkv-model
+      - API_LLM_NAME=rwkv
       - API_EMBEDDER_MODEL_NAME=e5
       - API_SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://postgres:password@db:5432/esearch
       - API_ENVIRONMENT=prod

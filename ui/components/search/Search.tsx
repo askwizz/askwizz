@@ -1,33 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { groupBy, sortBy } from "lodash";
+import { useCallback, useState } from "react";
 
+import useGetAuthToken from "@/hooks/useGetAuthToken";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { Separator } from "../ui/separator";
 import DocumentResult from "./DocumentResult";
+import useGroupResponseByDocument from "./hooks/useGroupResponseByDocument";
+import useKeyboardShortcut from "./hooks/useKeyboardShortcut";
+import useProvideAnswer from "./hooks/useProvideAnswer";
 import { JsonResponse } from "./types";
 
 export default function Search() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("What is a bad bank ?");
   const [response, setResponse] = useState<JsonResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+  const [answer, setAnswer] = useState<string>("");
+  const token = useGetAuthToken();
 
-  const payloadData = useMemo(
-    () => ({
-      query: search,
-      generate_answer: false,
-    }),
-    [search],
-  );
+  const setPassageText = (text: string, textHash: string) => {
+    setResponse((prevResponse) => {
+      if (!prevResponse) return prevResponse;
+      const newReferences = prevResponse.references.map((reference) => {
+        if (reference.metadata.reference.text_hash === textHash) {
+          return { ...reference, text };
+        }
+        return reference;
+      });
+      return { ...prevResponse, references: newReferences };
+    });
+  };
 
   const handleClickOnSearch = useCallback(() => {
+    const payloadData = { query: search };
     const fetchSearchResults = async () => {
-      const token = await getToken();
       const headers = new Headers();
       headers.append("Content-Type", "application/json;charset=utf-8");
       headers.append("Authorization", `Bearer ${token}`);
@@ -45,48 +53,14 @@ export default function Search() {
         setResponse(parsedResponse);
       })
       .finally(() => setLoading(false));
-  }, [getToken, payloadData]);
+  }, [token, search]);
 
-  useEffect(() => {
-    const keyboardHandler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        handleClickOnSearch();
-      }
-    };
-    document.addEventListener("keydown", keyboardHandler);
-    return () => document.removeEventListener("keydown", keyboardHandler);
-  }, [handleClickOnSearch]);
+  useKeyboardShortcut({ handleClickOnSearch });
+  useProvideAnswer(setAnswer, response?.references, search);
 
-  const responseGroupedByDocument = useMemo(() => {
-    return sortBy(
-      Object.entries(
-        groupBy(
-          response?.references,
-          (reference) => reference.metadata.document_link,
-        ),
-      ).map(([document_link, references]) => {
-        const sectionPassages = sortBy(
-          Object.entries(
-            groupBy(references, (reference) => reference.metadata.link),
-          ).map(([sectionLink, passagesWithSameLink]) => ({
-            sectionLink,
-            passagesWithSameLink: sortBy(
-              passagesWithSameLink,
-              (passage) => -passage.score,
-            ),
-            score: Math.min(...passagesWithSameLink.map((p) => -p.score)),
-          })),
-          (section) => section.score,
-        );
-        return {
-          passages: sectionPassages,
-          document_link,
-          score: Math.min(...sectionPassages.map((p) => p.score)),
-        };
-      }),
-      (document) => document.score,
-    );
-  }, [response?.references]);
+  const responseGroupedByDocument = useGroupResponseByDocument(
+    response?.references,
+  );
 
   return (
     <div className="flex w-full flex-col items-center">
@@ -103,12 +77,16 @@ export default function Search() {
           Search
         </Button>
       </div>
-      <div className="mt-8 flex h-32 w-full flex-col">
+      <div className="mt-8 text-sm">{answer}</div>
+      <div className="mt-4 flex h-32 w-full flex-col">
         {loading && <span>Loading...</span>}
         {responseGroupedByDocument.map((document) => (
           <div key={document.document_link} className="flex flex-col">
             <Separator className="my-2" />
-            <DocumentResult document={document} />
+            <DocumentResult
+              document={document}
+              setPassageText={setPassageText}
+            />
           </div>
         ))}
       </div>

@@ -5,8 +5,9 @@ from fastapi import FastAPI
 
 from esearch.api.settings import AppSettings
 from esearch.core.models.embeddings import load_embedder
+from esearch.core.models.llm import load_llm
 
-ml_models = {}
+ML_MODELS = {}
 
 
 def get_lifespan(
@@ -15,10 +16,10 @@ def get_lifespan(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator:  # noqa: ARG001
         # Load the ML model
-        ml_models["embedder"] = load_embedder(app_settings.embedder_model_name)
-        ml_models["llm"] = None
+        ML_MODELS["embedder"] = load_embedder(app_settings.embedder_model_name)
+        ML_MODELS["llm"] = load_llm(app_settings)
         yield
         # Clean up the ML models and release the resources
-        ml_models.clear()
+        ML_MODELS.clear()
 
     return lifespan
