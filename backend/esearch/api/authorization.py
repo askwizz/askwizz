@@ -65,7 +65,7 @@ def get_user_from_token(token: str) -> UserData:
         if user_id is None:
             raise CredentialsException  # noqa: TRY301
         token_data = UserData(user_id=user_id)
-    except JWTError:
+    except JWTError as jwt_error:
         logging.exception("Error occured while decoding JWT token")
-        raise CredentialsException
+        raise CredentialsException from jwt_error
     return token_data

@@ -33,6 +33,7 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@dna-script-inc"
           always-auth: true
+          working-directory: ./ui
 
       - name: Install dependencies
         run: |
