@@ -1,0 +1,54 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ui/**"
+  pull_request:
+    paths:
+      - "ui/**"
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ui
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+        with:
+          working-directory: ./ui
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: "yarn"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@dna-script-inc"
+          always-auth: true
+
+      - name: Install dependencies
+        run: |
+          yarn cache clean
+          yarn install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GIT_PAT_AWS_DEV }}
+
+      - name: Test the build
+        run: yarn build
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Prettier
+        run: yarn format:check
+
+      - name: Typescript
+        run: yarn typecheck

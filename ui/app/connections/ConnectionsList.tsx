@@ -35,7 +35,7 @@ export default function ConnectionsList() {
           <ConnectionCard
             fetchConnections={fetchConnections}
             connection={connection}
-            key={connection.id}
+            key={connection.id_}
           />
         );
       })}

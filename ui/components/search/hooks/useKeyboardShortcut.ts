@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 
-export default function useKeyboardShortcut({handleClickOnSearch}: {handleClickOnSearch: () => void}) {
+export default function useKeyboardShortcut({
+  handleClickOnSearch,
+}: {
+  handleClickOnSearch: () => void;
+}) {
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
