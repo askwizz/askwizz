@@ -4,11 +4,10 @@ import os
 import uuid
 from typing import List
 
-from langchain.docstore.document import Document
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from esearch.api.lifespan import ml_models
+from esearch.api.lifespan import ML_MODELS
 from esearch.core.passage.retrieve import get_text_from_passage
 from esearch.core.search_history.definition import SearchHistory
 from esearch.db.constants import MAX_QUERY_SIZE
@@ -24,39 +23,16 @@ token_config_path = os.path.join(os.path.dirname(__file__), "models/20B_tokenize
 
 class SearchRequest(BaseModel):
     query: str = Field(max_length=MAX_QUERY_SIZE)
-    query_texts: bool = True
-    generate_answer: bool = False
+    query_texts: bool = False
 
 
-def get_context_from_documents(documents: list[Document]) -> str:
-    sep = """
-    """
-    return sep.join([d.page_content for d in documents])
-
-
-def generate_prompt(question: str, relevant_documents: list[Document]) -> str:
-    context = get_context_from_documents(relevant_documents)
-    return f"""Q & A
-Given the following extracted parts of multiple documents and a question, create a final answer with references.
-If you don't know the answer, just say that you don't know. Don't try to make up an answer.
-
-DOCUMENTS:
-{context}
-
-QUESTION:
-{question}
-Detailed expert answer:
-"""  # noqa: E501
-
-
-def get_answer_and_documents(
+def get_relevant_documents(
     payload: SearchRequest,
     milvus_client: Milvus,
-) -> tuple[list[RetrievedPassage], str]:
+) -> List[RetrievedPassage]:
     logging.info(f"Providing answer to question {payload.query}")
     question = payload.query
-    relevant_documents = milvus_client.similarity_search(question, k=10)
-    return relevant_documents, ""
+    return milvus_client.similarity_search(question, k=10)
 
 
 def add_text_to_passage(db: Session, user_id: str, passage: RetrievedPassage) -> None:
@@ -80,12 +56,12 @@ def search(
     milvus_client: Milvus,
     db: Session,
     user_id: str,
-) -> tuple[list[RetrievedPassage], str]:
-    ml_models["llm"]
-    documents, answer = get_answer_and_documents(payload, milvus_client)
+) -> List[RetrievedPassage]:
+    ML_MODELS["llm"]
+    documents = get_relevant_documents(payload, milvus_client)
     if payload.query_texts:
         add_texts_to_passages(db, user_id, documents)
-    return documents, answer
+    return documents
 
 
 def save_search_query(db: Session, user_id: str, query: str) -> None:

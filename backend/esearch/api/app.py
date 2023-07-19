@@ -3,6 +3,7 @@ import logging
 import dotenv
 from fastapi import FastAPI
 
+import esearch.api.route.answer
 import esearch.api.route.auth
 import esearch.api.route.connection
 import esearch.api.route.history
@@ -20,6 +21,7 @@ def create_app_with_settings(app_settings: AppSettings) -> FastAPI:
     esearch.api.route.search.add_routes(app=app, settings=app_settings)
     esearch.api.route.connection.add_routes(app=app, settings=app_settings)
     esearch.api.route.history.add_routes(app=app, settings=app_settings)
+    esearch.api.route.answer.add_routes(app=app, settings=app_settings)
     esearch.api.route.version.add_routes(app=app)
     logging.warning("Configured routes")
 

@@ -12,10 +12,6 @@ import { TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import PassageText from "./PassageText";
 import { Document, DocumentType, Passage } from "./types";
 
-type DocumentResultProps = {
-  document: Document;
-};
-
 export const getDocumentTitle = (passage: Passage) => {
   if (passage.metadata.filetype === DocumentType.CONFLUENCE) {
     const confluence = passage.metadata.reference.confluence;
@@ -45,7 +41,15 @@ export const getDocumentIcon = (document: Document) => {
   return SourceProperties[documentType].icon;
 };
 
-export default function DocumentResult({ document }: DocumentResultProps) {
+type DocumentResultProps = {
+  document: Document;
+  setPassageText: (text: string, textHash: string) => void;
+};
+
+export default function DocumentResult({
+  document,
+  setPassageText,
+}: DocumentResultProps) {
   const firstPassage = document.passages[0].passagesWithSameLink[0];
   const documentTitle = getDocumentTitle(firstPassage);
   const documentLink = firstPassage.metadata.document_link;
@@ -147,6 +151,7 @@ export default function DocumentResult({ document }: DocumentResultProps) {
                           <PassageText
                             key={passage.passage_id}
                             passage={passage}
+                            setPassageText={setPassageText}
                           />
                         );
                       })}

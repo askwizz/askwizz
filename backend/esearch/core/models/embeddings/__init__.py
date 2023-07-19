@@ -3,7 +3,7 @@ from typing import Literal
 
 from esearch.core.models.embeddings.e5 import CustomEmbeddings
 
-EmbeddingModel = Literal["e5"] | Literal["huggingface"]
+EmbeddingModel = Literal["e5", "huggingface"]
 
 
 def load_embedder(model_name: str) -> CustomEmbeddings:

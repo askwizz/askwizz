@@ -6,7 +6,12 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from esearch.api.settings import AppSettings, get_is_production, get_settings
+from esearch.api.settings import (
+    AppSettings,
+    get_is_production,
+    get_settings,
+    is_production,
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -27,25 +32,40 @@ class UserData(BaseModel):
     user_id: str
 
 
-async def get_current_user(
+CredentialsException = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+
+async def get_current_user_dependency(
     token: Annotated[str, Depends(oauth2_scheme)],
     settings: Annotated[AppSettings, Depends(get_settings)],
     is_production: Annotated[bool, Depends(get_is_production)],
 ) -> UserData:
     if settings.auth_userdata_override_id and not is_production:
         return UserData(user_id=settings.auth_userdata_override_id)
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    return get_user_from_token(token)
+
+
+def get_current_user(
+    token: str,
+    settings: AppSettings,
+) -> UserData:
+    if settings.auth_userdata_override_id and not is_production(settings):
+        return UserData(user_id=settings.auth_userdata_override_id)
+    return get_user_from_token(token)
+
+
+def get_user_from_token(token: str) -> UserData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")  # type: ignore
         if user_id is None:
-            raise credentials_exception  # noqa: TRY301
+            raise CredentialsException  # noqa: TRY301
         token_data = UserData(user_id=user_id)
-    except JWTError:
+    except JWTError as jwt_error:
         logging.exception("Error occured while decoding JWT token")
-        raise credentials_exception
+        raise CredentialsException from jwt_error
     return token_data

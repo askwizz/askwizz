@@ -16,8 +16,8 @@ from pymilvus import (
     utility,
 )
 
-from esearch.api.authorization import UserData, get_current_user
-from esearch.api.lifespan import ml_models
+from esearch.api.authorization import UserData, get_current_user_dependency
+from esearch.api.lifespan import ML_MODELS
 from esearch.core.models.embeddings.e5 import CustomEmbeddings
 from esearch.core.passage.definition import DocumentReference, Passage, PassageMetadata
 from esearch.core.passage.format import get_json_from_passage_metadata
@@ -248,9 +248,9 @@ class Milvus:
 
 
 async def milvus_dependency(
-    user: Annotated[UserData, Depends(get_current_user)]
+    user: Annotated[UserData, Depends(get_current_user_dependency)]
 ) -> AsyncGenerator[Milvus, None]:
-    milvus_client = Milvus(user.user_id, ml_models["embedder"])
+    milvus_client = Milvus(user.user_id, ML_MODELS["embedder"])
     try:
         yield milvus_client
     finally:

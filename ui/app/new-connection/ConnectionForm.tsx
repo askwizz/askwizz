@@ -79,6 +79,7 @@ export default function AtlassianForm() {
         "bpc-ai.atlassian.net",
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(values: FormSchema) {

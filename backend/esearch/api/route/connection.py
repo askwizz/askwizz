@@ -6,10 +6,10 @@ from sqlalchemy.orm import Session
 
 from esearch.api.authorization import (
     UserData,
-    get_current_user,
+    get_current_user_dependency,
 )
 from esearch.api.exceptions import DBNotInitializedException
-from esearch.api.lifespan import ml_models
+from esearch.api.lifespan import ML_MODELS
 from esearch.api.settings import AppSettings
 from esearch.core.connection.definition import Connection
 from esearch.core.connection.entity import (
@@ -27,7 +27,7 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
     @app.post("/api/new-connection")
     async def new_connection(
         connection_data: NewConnectionPayload,
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
         background_tasks: BackgroundTasks,
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
@@ -39,12 +39,12 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
         connection = create_or_update_connection(db, connection_data, user_data.user_id)
         logging.info(f"Created connection {connection.id_}")
         background_tasks.add_task(
-            index_connection, connection, ml_models["embedder"], db, milvus_client
+            index_connection, connection, ML_MODELS["embedder"], db, milvus_client
         )
 
     @app.get("/api/connections")
     async def connections(
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
     ) -> List[Connection]:
         if db is None:
@@ -55,7 +55,7 @@ def add_routes(app: FastAPI, settings: AppSettings) -> None:
     @app.delete("/api/connections/{connection_id}")
     async def delete_connections(
         connection_id: str,
-        user_data: Annotated[UserData, Depends(get_current_user)],
+        user_data: Annotated[UserData, Depends(get_current_user_dependency)],
         db: Annotated[Session, Depends(get_db(settings.sqlalchemy_database_url))],
         milvus_client: Annotated[Milvus, Depends(milvus_dependency)],
     ) -> None:
