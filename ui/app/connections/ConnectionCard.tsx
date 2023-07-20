@@ -1,7 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,15 +11,27 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 import { Connection } from "./types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGetToken } from "@/components/contexts/TokenContext";
+
+const deleteConnection = async (token: string, connectionId: string) => {
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json;charset=utf-8");
+  headers.append("Authorization", `Bearer ${token}`);
+  return fetch(`/api/connections/${connectionId}`, {
+    method: "DELETE",
+    headers,
+  });
+};
 
 export default function ConnectionCard({
   connection,
-  fetchConnections,
 }: {
   connection: Connection;
-  fetchConnections: () => void;
 }) {
-  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  const token = useGetToken();
+
   const {
     name,
     created_at: createdAt,
@@ -33,21 +43,17 @@ export default function ConnectionCard({
   } = connection;
   const getLocalDate = (date: string) => new Date(date).toLocaleDateString();
 
-  const deleteConnection = async (connectionId: string) => {
-    const token = await getToken();
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json;charset=utf-8");
-    headers.append("Authorization", `Bearer ${token}`);
-    return fetch(`/api/connections/${connectionId}`, {
-      method: "DELETE",
-      headers,
-    });
-  };
+  const mutation = useMutation({
+    mutationFn: (connectionId: string) => {
+      return deleteConnection(token, connectionId);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+  });
 
   const handleClickOnRemove = () => {
-    deleteConnection(connection.id_).finally(() => {
-      fetchConnections();
-    });
+    mutation.mutate(connection.id_);
   };
 
   return (
