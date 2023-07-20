@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -27,6 +26,19 @@ import {
 import ConfluenceForm from "./ConfluenceForm";
 import { SourceProperties } from "./constants";
 import { AVAILABLE_SOURCES, Source } from "./types";
+import { useGetToken } from "@/components/contexts/TokenContext";
+import { useMutation } from "@tanstack/react-query";
+
+const submitForm = async (token: string, body: string) => {
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json;charset=utf-8");
+  headers.append("Authorization", `Bearer ${token}`);
+  return fetch("/api/new-connection", {
+    headers,
+    method: "POST",
+    body,
+  });
+};
 
 const formSchema = z.object({
   name: z.string().min(2, "Too short").max(80, "Too long"),
@@ -43,7 +55,7 @@ const formSchema = z.object({
 export type FormSchema = z.infer<typeof formSchema>;
 
 export default function AtlassianForm() {
-  const { getToken } = useAuth();
+  const token = useGetToken();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -82,25 +94,17 @@ export default function AtlassianForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function onSubmit(values: FormSchema) {
-    const submitForm = async () => {
-      const token = await getToken();
-      if (!token) return;
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json;charset=utf-8");
-      headers.append("Authorization", `Bearer ${token}`);
-      return fetch("/api/new-connection", {
-        headers,
-        method: "POST",
-        body: JSON.stringify(values),
-      });
-    };
-    submitForm();
-  }
+  const { mutate } = useMutation({
+    mutationFn: (values: FormSchema) =>
+      submitForm(token, JSON.stringify(values)),
+  });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit((values) => mutate(values))}
+        className="space-y-8"
+      >
         <FormField
           control={form.control}
           name="name"

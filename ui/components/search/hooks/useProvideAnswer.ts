@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
-import useGetAuthToken from "@/hooks/useGetAuthToken";
-
 import { Passage } from "../types";
+import { useGetToken } from "@/components/contexts/TokenContext";
 
 export enum SendMessageType {
   AUTH = "AUTH",
@@ -27,11 +26,12 @@ const parseMessage = (message: string) =>
 export default function useProvideAnswer(
   references: Passage[] | undefined,
   search: string,
+  generateAnswer: boolean = false,
 ) {
   const [answer, setAnswer] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const token = useGetAuthToken();
+  const token = useGetToken();
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function useProvideAnswer(
   );
 
   useEffect(() => {
-    if (!canAskForAnswer || !ws) {
+    if (!canAskForAnswer || !ws || !generateAnswer) {
       setLoading(false);
       return;
     }
@@ -71,7 +71,7 @@ export default function useProvideAnswer(
     });
     ws.send(getSendMessage(SendMessageType.QUERY, message));
     setLoading(true);
-  }, [canAskForAnswer, ws, search, references]);
+  }, [canAskForAnswer, ws, search, references, generateAnswer]);
 
   return { answer, loading };
 }

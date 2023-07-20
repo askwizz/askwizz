@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import useGetAuthToken from "@/hooks/useGetAuthToken";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -13,14 +12,28 @@ import useKeyboardShortcut from "./hooks/useKeyboardShortcut";
 import useProvideAnswer from "./hooks/useProvideAnswer";
 import { JsonResponse } from "./types";
 import Loader from "../loader/Loader";
+import { useGetToken } from "../contexts/TokenContext";
+import { useQuery } from "@tanstack/react-query";
+
+const fetchSearchResults = async (token: string, body: string) => {
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json;charset=utf-8");
+  headers.append("Authorization", `Bearer ${token}`);
+  const data = await fetch("/api/search", {
+    method: "POST",
+    headers,
+    body,
+  });
+  return data.json();
+};
 
 export default function Search() {
-  const [search, setSearch] = useState("What is a bad bank ?");
+  const [shouldSearch, setShouldSearch] = useState(false);
+  const [search, setSearch] = useState("");
   const [textInput, setTextInput] = useState("What is a bad bank ?");
   const [response, setResponse] = useState<JsonResponse | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const token = useGetAuthToken();
+  const token = useGetToken();
 
   const setPassageText = (text: string, textHash: string) => {
     setResponse((prevResponse) => {
@@ -35,28 +48,23 @@ export default function Search() {
     });
   };
 
+  const payloadData = JSON.stringify({ query: search });
+  const { data: parsedResponse, isFetching } = useQuery({
+    queryFn: () => fetchSearchResults(token, payloadData),
+    queryKey: ["search", search],
+    enabled: shouldSearch,
+    staleTime: 1000 * 60 * 60,
+  });
+
+  useEffect(() => {
+    setResponse(parsedResponse);
+  }, [parsedResponse]);
+
   const handleClickOnSearch = useCallback(() => {
     setSearch(textInput);
-    const payloadData = { query: textInput };
-    const fetchSearchResults = async () => {
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json;charset=utf-8");
-      headers.append("Authorization", `Bearer ${token}`);
-      return await fetch("/api/search", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payloadData),
-      });
-    };
+    setShouldSearch(true);
     setResponse(null);
-    setLoading(true);
-    fetchSearchResults()
-      .then(async (response) => {
-        const parsedResponse = (await response.json()) as JsonResponse;
-        setResponse(parsedResponse);
-      })
-      .finally(() => setLoading(false));
-  }, [token, textInput]);
+  }, [textInput]);
 
   useKeyboardShortcut({ handleClickOnSearch });
 
@@ -91,7 +99,7 @@ export default function Search() {
       )}
       {answer && <div className="mt-8 text-sm">{answer}</div>}
       <div className="mt-4 flex h-32 w-full flex-col">
-        {loading && (
+        {isFetching && (
           <div className="flex h-full w-full justify-center">
             <Loader />
           </div>

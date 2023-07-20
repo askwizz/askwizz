@@ -16,12 +16,12 @@ from esearch.db.models.connection import fetch_connection_of_user
 
 
 class ConfluencePassageTextPayload(BaseModel):
-    passage_hash: str
     page_path: str
 
 
 class PassageTextPayload(BaseModel):
     confluence: ConfluencePassageTextPayload | None = None
+    passage_hash: str
 
 
 @lru_cache(maxsize=128)
@@ -99,7 +99,7 @@ def get_text_from_passage_payload(
         return get_confluence_text(
             connection,
             connection_id,
-            confluence_config.passage_hash,
+            config.passage_hash,
             confluence_config.page_path,
         )
     return "Source text fetching not implemented"
@@ -112,11 +112,10 @@ def get_text_from_passage(
 ) -> str:
     connection = fetch_connection_of_user(db, user_id, passage.connection_id)
     if connection.source == ConnectionSource.CONFLUENCE:
-        confluence_config = ConfluencePassageTextPayload(passage_hash=passage.reference.text_hash, page_path=passage.reference.confluence.page_path)  # type: ignore  # noqa: E501
         return get_confluence_text(
             connection,
             passage.connection_id,
-            confluence_config.passage_hash,
-            confluence_config.page_path,
+            passage.reference.text_hash,
+            passage.reference.confluence.page_path,  # type: ignore
         )
     return "Source text fetching not implemented"
